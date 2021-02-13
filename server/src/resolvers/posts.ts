@@ -1,12 +1,28 @@
-import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql'
+import {
+  Arg,
+  Authorized,
+  Ctx,
+  Field,
+  Mutation,
+  ObjectType,
+  Publisher,
+  PubSub,
+  PubSubEngine,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+} from 'type-graphql'
 import Post from '../entities/Post'
-import { Context, postInput } from '../utils/types'
+import { Context, Notification, NotificationPayload, postInput } from '../utils/types'
 
 @Resolver()
 export default class PostResolver {
+  private autoIncrement = 0
+
   @Query(() => [Post])
   getAllPosts() {
-    return Post.find()
+    return Post.find({ relations: ['creator'], order: { createdAt: 'DESC' } })
   }
 
   @Authorized(['USER', 'ADMIN'])
@@ -22,7 +38,36 @@ export default class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  getPost(@Arg('id') id: number) {
-    return Post.findOne({ where: { id } })
+  async getPost(@Arg('id') id: number) {
+    const post = await Post.findOne({ where: { id }, relations: ['creator'] })
+
+    console.log(post)
+
+    return post
+  }
+
+  // Testing
+  @Mutation((returns) => Boolean)
+  async pubSubMutation(
+    @PubSub() pubSub: PubSubEngine,
+    @Arg('message', { nullable: true }) message?: string
+  ): Promise<boolean> {
+    const payload: NotificationPayload = { id: ++this.autoIncrement, message }
+    await pubSub.publish('NOTIFICATIONS', payload)
+    return true
+  }
+
+  @Mutation((returns) => Boolean)
+  async publisherMutation(
+    @PubSub('NOTIFICATIONS') publish: Publisher<NotificationPayload>,
+    @Arg('message', { nullable: true }) message?: string
+  ): Promise<boolean> {
+    await publish({ id: ++this.autoIncrement, message })
+    return true
+  }
+
+  @Subscription({ topics: 'NOTIFICATIONS' })
+  normalSubscription(@Root() { id, message }: NotificationPayload): Notification {
+    return { id, message, date: new Date() }
   }
 }

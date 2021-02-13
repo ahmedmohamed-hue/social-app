@@ -1,5 +1,5 @@
 import { hash, verify } from 'argon2'
-import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from 'type-graphql'
+import { Arg, Authorized, Ctx, Field, InputType, Mutation, Query, Resolver } from 'type-graphql'
 import User from '../entities/User'
 import { Context, registerInput } from '../utils/types'
 
@@ -50,8 +50,11 @@ export default class UserResovler {
     }
 
     req.session.userId = user.id
+    if (!user.isVisible) {
+      user.onlineStatus = true
+    }
 
-    return user
+    return user.save()
   }
 
   @Query(() => User, { nullable: true })
@@ -64,7 +67,8 @@ export default class UserResovler {
   }
 
   @Mutation(() => Boolean, {})
-  logout(@Ctx() { req, res }: Context) {
+  async logout(@Ctx() { req, res }: Context) {
+    const user = await User.findOne({ where: { id: req.session.userId } })
     return new Promise((resolve) =>
       req.session.destroy((e) => {
         res.clearCookie('eid')
@@ -74,8 +78,45 @@ export default class UserResovler {
           return
         }
 
+        if (user) {
+          user.onlineStatus = false
+          user.lastSeen = new Date()
+          user.save().then()
+        }
+
         resolve(true)
       })
     )
+  }
+
+  @Query(() => User, { nullable: true })
+  getUser(@Arg('username') username: string) {
+    console.log(JSON.stringify(username))
+    return User.findOne({ where: { username } })
+  }
+
+  @Query(() => [User])
+  getUsers() {
+    return User.find({ order: { lastSeen: 'DESC', onlineStatus: 'DESC' } })
+  }
+
+  @Authorized()
+  @Mutation(() => User, { nullable: true })
+  async toggleStatus(@Ctx() ctx: Context) {
+    const user = await User.findOne({ where: { id: ctx.req.session.userId } })
+    if (!user) {
+      return null
+    }
+
+    user.onlineStatus = !user.onlineStatus
+
+    if (!user.onlineStatus) {
+      user.isVisible = true
+      user.lastSeen = new Date()
+    } else {
+      user.isVisible = false
+    }
+
+    return user.save()
   }
 }

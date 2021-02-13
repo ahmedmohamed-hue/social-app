@@ -1,0 +1,14 @@
+query getPosts {
+  getAllPosts {
+    id
+    body
+    title
+    createdAt
+    creatorId
+    creator {
+      username
+      firstName
+      lastName
+    }
+  }
+}

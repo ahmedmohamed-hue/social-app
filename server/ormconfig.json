@@ -1,7 +1,7 @@
 {
   "type": "postgres",
   "host": "localhost",
-  "port": 6543,
+  "port": 5432,
   "username": "postgres",
   "password": "1798",
   "database": "social-app",

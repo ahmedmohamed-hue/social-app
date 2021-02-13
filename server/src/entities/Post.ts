@@ -1,9 +1,9 @@
 import { Field, ObjectType } from 'type-graphql'
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import User from './User'
 
-@Entity('Post')
 @ObjectType()
+@Entity('Post')
 export default class Post extends BaseEntity {
   @PrimaryGeneratedColumn('increment')
   @Field()
@@ -21,6 +21,15 @@ export default class Post extends BaseEntity {
   @Field()
   creatorId: string
 
+  @Field(() => User)
   @ManyToOne(() => User, (user) => user.posts)
   creator: User
+
+  @Field(() => String)
+  @CreateDateColumn()
+  createdAt: Date
+
+  @Field(() => String)
+  @CreateDateColumn()
+  updateAt: Date
 }

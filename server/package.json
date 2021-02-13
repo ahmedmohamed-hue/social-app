@@ -7,14 +7,18 @@
     "dev": "tsnd --respawn src/app.ts"
   },
   "dependencies": {
+    "@types/cookie": "^0.4.0",
     "apollo-server-express": "^2.19.1",
     "argon2": "^0.27.1",
     "class-validator": "^0.13.1",
     "connect-redis": "^5.0.0",
+    "cookie": "^0.4.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "graphql": "^15.4.0",
+    "graphql-subscriptions": "^1.2.0",
+    "http": "^0.0.1-security",
     "pg": "^8.5.1",
     "redis": "^3.0.2",
     "reflect-metadata": "^0.1.13",

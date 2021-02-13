@@ -1,7 +1,7 @@
 import { IsEmail, Length, Min } from 'class-validator'
 import { Request, Response, Express } from 'express'
 import { SessionData } from 'express-session'
-import { Field, InputType, ObjectType } from 'type-graphql'
+import { Field, ID, InputType, ObjectType } from 'type-graphql'
 
 declare module 'express-session' {
   export interface SessionData {
@@ -43,4 +43,21 @@ export class postInput {
 
   @Field()
   body: string
+}
+
+@ObjectType()
+export class Notification {
+  @Field(type => ID)
+  id: number;
+
+  @Field({ nullable: true })
+  message?: string;
+
+  @Field(type => Date)
+  date: Date;
+}
+
+export interface NotificationPayload {
+  id: number;
+  message?: string;
 }

@@ -1,0 +1,14 @@
+query getPost($id: Float!) {
+  getPost(id: $id) {
+    id
+    body
+    title
+    createdAt
+    creatorId
+    creator {
+      username
+      firstName
+      lastName
+    }
+  }
+}

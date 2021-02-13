@@ -1,5 +1,12 @@
 import { Field, ObjectType } from 'type-graphql'
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import Post from './Post'
 
 @ObjectType()
@@ -33,4 +40,15 @@ export default class User extends BaseEntity {
 
   @OneToMany(() => Post, (post) => post.creator)
   posts: Post[]
+
+  @Column({ default: true })
+  @Field()
+  onlineStatus: boolean
+
+  @Column({ default: false })
+  isVisible: boolean
+
+  @Field()
+  @CreateDateColumn()
+  lastSeen: Date
 }

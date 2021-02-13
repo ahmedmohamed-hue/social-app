@@ -1,0 +1,11 @@
+mutation toggleStatus {
+  toggleStatus {
+    id
+    firstName
+    lastName
+    email
+    username
+    onlineStatus
+    lastSeen
+  }
+}
