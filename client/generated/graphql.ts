@@ -13,6 +13,8 @@ export type Scalars = {
   Float: number;
   /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
   DateTime: any;
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: any;
 };
 
 export type Query = {
@@ -50,10 +52,11 @@ export type User = {
   username: Scalars['String'];
   firstName: Scalars['String'];
   lastName: Scalars['String'];
+  avatar_url?: Maybe<Scalars['String']>;
+  posts: Array<Post>;
   onlineStatus: Scalars['Boolean'];
   lastSeen: Scalars['DateTime'];
 };
-
 
 export type Post = {
   __typename?: 'Post';
@@ -61,10 +64,12 @@ export type Post = {
   title: Scalars['String'];
   body: Scalars['String'];
   creatorId: Scalars['String'];
-  creator: User;
   createdAt: Scalars['String'];
   updateAt: Scalars['String'];
+  creator: User;
+  owner: Scalars['Boolean'];
 };
+
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -72,7 +77,10 @@ export type Mutation = {
   login?: Maybe<User>;
   logout: Scalars['Boolean'];
   toggleStatus?: Maybe<User>;
+  addAvatar: Scalars['Boolean'];
+  removeAvatar: Scalars['Boolean'];
   createPost: Post;
+  deletePost: Scalars['Boolean'];
   pubSubMutation: Scalars['Boolean'];
   publisherMutation: Scalars['Boolean'];
 };
@@ -89,8 +97,18 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationAddAvatarArgs = {
+  file: Scalars['Upload'];
+};
+
+
 export type MutationCreatePostArgs = {
   options: PostInput;
+};
+
+
+export type MutationDeletePostArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -111,6 +129,7 @@ export type RegisterInput = {
   password: Scalars['String'];
 };
 
+
 export type PostInput = {
   title: Scalars['String'];
   body: Scalars['String'];
@@ -128,6 +147,54 @@ export type Notification = {
   date: Scalars['DateTime'];
 };
 
+export type CurrentUserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
+);
+
+export type RegularUserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, 'id' | 'firstName' | 'lastName' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
+);
+
+export type AddAvatarMutationVariables = Exact<{
+  file: Scalars['Upload'];
+}>;
+
+
+export type AddAvatarMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addAvatar'>
+);
+
+export type CreatePostMutationVariables = Exact<{
+  title: Scalars['String'];
+  body: Scalars['String'];
+}>;
+
+
+export type CreatePostMutation = (
+  { __typename?: 'Mutation' }
+  & { createPost: (
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner'>
+    & { creator: (
+      { __typename?: 'User' }
+      & Pick<User, 'username' | 'firstName' | 'lastName'>
+    ) }
+  ) }
+);
+
+export type DeletePostMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DeletePostMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deletePost'>
+);
+
 export type LoginMutationVariables = Exact<{
   usernameOrEmail: Scalars['String'];
   password: Scalars['String'];
@@ -138,7 +205,7 @@ export type LoginMutation = (
   { __typename?: 'Mutation' }
   & { login?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen'>
+    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
   )> }
 );
 
@@ -163,8 +230,16 @@ export type RegisterMutation = (
   { __typename?: 'Mutation' }
   & { register: (
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen'>
+    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
   ) }
+);
+
+export type RemoveAvatarMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RemoveAvatarMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'removeAvatar'>
 );
 
 export type ToggleStatusMutationVariables = Exact<{ [key: string]: never; }>;
@@ -174,7 +249,7 @@ export type ToggleStatusMutation = (
   { __typename?: 'Mutation' }
   & { toggleStatus?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen'>
+    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
   )> }
 );
 
@@ -185,7 +260,7 @@ export type CurrentUserQuery = (
   { __typename?: 'Query' }
   & { currentUser?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen'>
+    & CurrentUserFragment
   )> }
 );
 
@@ -198,7 +273,7 @@ export type GetPostQuery = (
   { __typename?: 'Query' }
   & { getPost?: Maybe<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId'>
+    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner'>
     & { creator: (
       { __typename?: 'User' }
       & Pick<User, 'username' | 'firstName' | 'lastName'>
@@ -213,7 +288,7 @@ export type GetPostsQuery = (
   { __typename?: 'Query' }
   & { getAllPosts: Array<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId'>
+    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner'>
     & { creator: (
       { __typename?: 'User' }
       & Pick<User, 'username' | 'firstName' | 'lastName'>
@@ -230,7 +305,11 @@ export type GetUserQuery = (
   { __typename?: 'Query' }
   & { getUser?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'onlineStatus' | 'lastSeen'>
+    & Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'body' | 'title' | 'createdAt' | 'owner' | 'id'>
+    )> }
   )> }
 );
 
@@ -241,7 +320,7 @@ export type GetUsersQuery = (
   { __typename?: 'Query' }
   & { getUsers: Array<(
     { __typename?: 'User' }
-    & Pick<User, 'firstName' | 'username' | 'lastName' | 'email' | 'onlineStatus' | 'lastSeen'>
+    & RegularUserFragment
   )> }
 );
 
@@ -253,7 +332,132 @@ export type HelloQuery = (
   & Pick<Query, 'helloWorld'>
 );
 
+export const CurrentUserFragmentDoc = gql`
+    fragment CurrentUser on User {
+  id
+  firstName
+  lastName
+  email
+  username
+  onlineStatus
+  lastSeen
+  avatar_url
+}
+    `;
+export const RegularUserFragmentDoc = gql`
+    fragment RegularUser on User {
+  id
+  firstName
+  lastName
+  username
+  onlineStatus
+  lastSeen
+  avatar_url
+}
+    `;
+export const AddAvatarDocument = gql`
+    mutation addAvatar($file: Upload!) {
+  addAvatar(file: $file)
+}
+    `;
+export type AddAvatarMutationFn = Apollo.MutationFunction<AddAvatarMutation, AddAvatarMutationVariables>;
 
+/**
+ * __useAddAvatarMutation__
+ *
+ * To run a mutation, you first call `useAddAvatarMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddAvatarMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addAvatarMutation, { data, loading, error }] = useAddAvatarMutation({
+ *   variables: {
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useAddAvatarMutation(baseOptions?: Apollo.MutationHookOptions<AddAvatarMutation, AddAvatarMutationVariables>) {
+        return Apollo.useMutation<AddAvatarMutation, AddAvatarMutationVariables>(AddAvatarDocument, baseOptions);
+      }
+export type AddAvatarMutationHookResult = ReturnType<typeof useAddAvatarMutation>;
+export type AddAvatarMutationResult = Apollo.MutationResult<AddAvatarMutation>;
+export type AddAvatarMutationOptions = Apollo.BaseMutationOptions<AddAvatarMutation, AddAvatarMutationVariables>;
+export const CreatePostDocument = gql`
+    mutation createPost($title: String!, $body: String!) {
+  createPost(options: {title: $title, body: $body}) {
+    id
+    body
+    title
+    createdAt
+    creatorId
+    owner
+    creator {
+      username
+      firstName
+      lastName
+    }
+  }
+}
+    `;
+export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
+
+/**
+ * __useCreatePostMutation__
+ *
+ * To run a mutation, you first call `useCreatePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPostMutation, { data, loading, error }] = useCreatePostMutation({
+ *   variables: {
+ *      title: // value for 'title'
+ *      body: // value for 'body'
+ *   },
+ * });
+ */
+export function useCreatePostMutation(baseOptions?: Apollo.MutationHookOptions<CreatePostMutation, CreatePostMutationVariables>) {
+        return Apollo.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument, baseOptions);
+      }
+export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
+export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
+export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
+export const DeletePostDocument = gql`
+    mutation deletePost($id: String!) {
+  deletePost(id: $id)
+}
+    `;
+export type DeletePostMutationFn = Apollo.MutationFunction<DeletePostMutation, DeletePostMutationVariables>;
+
+/**
+ * __useDeletePostMutation__
+ *
+ * To run a mutation, you first call `useDeletePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePostMutation, { data, loading, error }] = useDeletePostMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeletePostMutation(baseOptions?: Apollo.MutationHookOptions<DeletePostMutation, DeletePostMutationVariables>) {
+        return Apollo.useMutation<DeletePostMutation, DeletePostMutationVariables>(DeletePostDocument, baseOptions);
+      }
+export type DeletePostMutationHookResult = ReturnType<typeof useDeletePostMutation>;
+export type DeletePostMutationResult = Apollo.MutationResult<DeletePostMutation>;
+export type DeletePostMutationOptions = Apollo.BaseMutationOptions<DeletePostMutation, DeletePostMutationVariables>;
 export const LoginDocument = gql`
     mutation Login($usernameOrEmail: String!, $password: String!) {
   login(usernameOrEmail: $usernameOrEmail, password: $password) {
@@ -264,6 +468,7 @@ export const LoginDocument = gql`
     username
     onlineStatus
     lastSeen
+    avatar_url
   }
 }
     `;
@@ -334,6 +539,7 @@ export const RegisterDocument = gql`
     username
     onlineStatus
     lastSeen
+    avatar_url
   }
 }
     `;
@@ -366,6 +572,35 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const RemoveAvatarDocument = gql`
+    mutation removeAvatar {
+  removeAvatar
+}
+    `;
+export type RemoveAvatarMutationFn = Apollo.MutationFunction<RemoveAvatarMutation, RemoveAvatarMutationVariables>;
+
+/**
+ * __useRemoveAvatarMutation__
+ *
+ * To run a mutation, you first call `useRemoveAvatarMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveAvatarMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeAvatarMutation, { data, loading, error }] = useRemoveAvatarMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRemoveAvatarMutation(baseOptions?: Apollo.MutationHookOptions<RemoveAvatarMutation, RemoveAvatarMutationVariables>) {
+        return Apollo.useMutation<RemoveAvatarMutation, RemoveAvatarMutationVariables>(RemoveAvatarDocument, baseOptions);
+      }
+export type RemoveAvatarMutationHookResult = ReturnType<typeof useRemoveAvatarMutation>;
+export type RemoveAvatarMutationResult = Apollo.MutationResult<RemoveAvatarMutation>;
+export type RemoveAvatarMutationOptions = Apollo.BaseMutationOptions<RemoveAvatarMutation, RemoveAvatarMutationVariables>;
 export const ToggleStatusDocument = gql`
     mutation toggleStatus {
   toggleStatus {
@@ -376,6 +611,7 @@ export const ToggleStatusDocument = gql`
     username
     onlineStatus
     lastSeen
+    avatar_url
   }
 }
     `;
@@ -406,16 +642,10 @@ export type ToggleStatusMutationOptions = Apollo.BaseMutationOptions<ToggleStatu
 export const CurrentUserDocument = gql`
     query currentUser {
   currentUser {
-    id
-    firstName
-    lastName
-    email
-    username
-    onlineStatus
-    lastSeen
+    ...CurrentUser
   }
 }
-    `;
+    ${CurrentUserFragmentDoc}`;
 
 /**
  * __useCurrentUserQuery__
@@ -449,6 +679,7 @@ export const GetPostDocument = gql`
     title
     createdAt
     creatorId
+    owner
     creator {
       username
       firstName
@@ -491,6 +722,7 @@ export const GetPostsDocument = gql`
     title
     createdAt
     creatorId
+    owner
     creator {
       username
       firstName
@@ -533,6 +765,14 @@ export const GetUserDocument = gql`
     lastName
     onlineStatus
     lastSeen
+    avatar_url
+    posts {
+      body
+      title
+      createdAt
+      owner
+      id
+    }
   }
 }
     `;
@@ -565,15 +805,10 @@ export type GetUserQueryResult = Apollo.QueryResult<GetUserQuery, GetUserQueryVa
 export const GetUsersDocument = gql`
     query getUsers {
   getUsers {
-    firstName
-    username
-    lastName
-    email
-    onlineStatus
-    lastSeen
+    ...RegularUser
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 
 /**
  * __useGetUsersQuery__

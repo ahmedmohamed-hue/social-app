@@ -1,11 +1,5 @@
 query currentUser {
   currentUser {
-    id
-    firstName
-    lastName
-    email
-    username
-    onlineStatus
-    lastSeen
+    ...CurrentUser
   }
 }

@@ -7,5 +7,6 @@ mutation Login($usernameOrEmail: String!, $password: String!) {
     username
     onlineStatus
     lastSeen
+    avatar_url
   }
 }

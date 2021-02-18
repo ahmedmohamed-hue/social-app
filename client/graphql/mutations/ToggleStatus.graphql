@@ -7,5 +7,6 @@ mutation toggleStatus {
     username
     onlineStatus
     lastSeen
+    avatar_url
   }
 }

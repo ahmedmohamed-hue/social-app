@@ -6,5 +6,13 @@ query GetUser($username: String!) {
     lastName
     onlineStatus
     lastSeen
+    avatar_url
+    posts {
+      body
+      title
+      createdAt
+      owner
+      id
+    }
   }
 }

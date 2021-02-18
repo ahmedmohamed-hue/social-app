@@ -2,9 +2,9 @@ import { useRouter } from 'next/router'
 import PostComponent from '../../components/Post'
 import React, { Fragment } from 'react'
 import Layout from '../../components/Layout'
-import { useGetPostQuery } from '../../generated/graphql'
+import { useGetPostQuery, Post as PostType } from '../../generated/graphql'
 import { withApollo } from '../../lib/apolloClient'
-import { Box } from '@material-ui/core'
+import { Box, Container } from '@material-ui/core'
 
 const Post: React.FC = () => {
   const router = useRouter()
@@ -27,9 +27,11 @@ const Post: React.FC = () => {
 
   return (
     <Layout>
-      <Box display="flex" width="100%" justifyContent="center" pt={3}>
-        {data?.getPost ? <PostComponent post={data.getPost!} /> : null}
-      </Box>
+      <Container maxWidth="sm">
+        <Box display="flex" width="100%" justifyContent="center" pt={3}>
+          {data?.getPost ? <PostComponent post={data.getPost! as PostType} /> : null}
+        </Box>
+      </Container>
     </Layout>
   )
 }

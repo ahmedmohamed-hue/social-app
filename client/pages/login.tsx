@@ -1,10 +1,21 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { useFormik } from 'formik';
-import { useRouter } from 'next/router';
-import { useLoginMutation, CurrentUserQuery, CurrentUserDocument } from '../generated/graphql';
-import { withApollo } from '../lib/apolloClient';
-import { Typography, Link, CssBaseline, TextField, FormControlLabel, Checkbox, Button, Grid, Box, Container } from '@material-ui/core';
+import React from 'react'
+import { makeStyles } from '@material-ui/core/styles'
+import { useFormik } from 'formik'
+import { useRouter } from 'next/router'
+import { useLoginMutation, CurrentUserQuery, CurrentUserDocument } from '../generated/graphql'
+import { withApollo } from '../lib/apolloClient'
+import {
+  Typography,
+  Link,
+  CssBaseline,
+  TextField,
+  FormControlLabel,
+  Checkbox,
+  Button,
+  Grid,
+  Box,
+  Container,
+} from '@material-ui/core'
 
 function Copyright() {
   return (
@@ -16,7 +27,7 @@ function Copyright() {
       {new Date().getFullYear()}
       {'.'}
     </Typography>
-  );
+  )
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -37,10 +48,10 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
-}));
+}))
 
 const login: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles()
   const router = useRouter()
   const [login] = useLoginMutation()
 
@@ -50,7 +61,6 @@ const login: React.FC = () => {
       password: '',
     },
     onSubmit: (values) => {
-
       login({
         variables: values,
         update: (cache, { data }) => {
@@ -62,13 +72,14 @@ const login: React.FC = () => {
             },
           })
         },
-      }).then((res) => {
-        console.log(res)
-        router.push("/")
-      }).catch(e => {
-        console.log(e)
       })
-    }
+        .then(() => {
+          router.push('/')
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    },
   })
 
   return (
@@ -88,7 +99,7 @@ const login: React.FC = () => {
             label="Email Address"
             autoComplete="email"
             autoFocus
-            {...getFieldProps("usernameOrEmail")}
+            {...getFieldProps('usernameOrEmail')}
           />
           <TextField
             variant="outlined"
@@ -99,7 +110,7 @@ const login: React.FC = () => {
             type="password"
             id="password"
             autoComplete="current-password"
-            {...getFieldProps("password")}
+            {...getFieldProps('password')}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
@@ -132,7 +143,7 @@ const login: React.FC = () => {
         <Copyright />
       </Box>
     </Container>
-  );
+  )
 }
 
 export default withApollo({ ssr: true })(login)

@@ -4,7 +4,8 @@ import { withApollo } from '../lib/apolloClient'
 import Layout from '../components/Layout'
 import {
   Box,
-  Divider,
+  Button,
+  Grid,
   Hidden,
   makeStyles,
   Paper,
@@ -12,11 +13,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@material-ui/core'
-import User from '../components/User'
 import Post from '../components/Post'
-import { User as UserType, Post as PostType } from '../generated/graphql'
+import { Post as PostType } from '../generated/graphql'
 import clsx from 'clsx'
 import PostSkeleton from '../components/Skeletons/PostSkeleton'
+import useModal from '../components/useModal'
+import CreatePostModal from '../components/Modals/CreatePostModal'
+import { useRouter } from 'next/router'
+import People from './components/People'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -46,16 +50,24 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const Index: React.FC = () => {
-  const { data } = useCurrentUserQuery()
+  const router = useRouter()
 
+  const { data } = useCurrentUserQuery()
   const posts = useGetPostsQuery()
 
-  const users = useGetUsersQuery({ pollInterval: 5000 })
-
   const classes = useStyles()
-
   const theme = useTheme()
   const md = useMediaQuery(theme.breakpoints.down('sm'))
+
+  const [props, handleOpen] = useModal()
+
+  const handleModalOpen = () => {
+    if (!data?.currentUser) {
+      router.push('/login')
+    } else {
+      handleOpen()
+    }
+  }
 
   return (
     <Layout>
@@ -64,44 +76,50 @@ const Index: React.FC = () => {
           [classes.rootMd]: md,
         })}
       >
-        <Hidden mdDown implementation="css">
-          <Box position="fixed">
-            <Box>
-              <Typography variant="h4" component="h1">
-                People
-              </Typography>
-              <Divider className={classes.divider} />
-            </Box>
-            <Paper className={classes.paper}>
-              {users.data?.getUsers
-                ? users.data.getUsers.map((user) => (
-                    <User key={user.username} user={user as UserType} />
-                  ))
-                : null}
-            </Paper>
-          </Box>
-        </Hidden>
-        <Box className={classes.main}>
-          {posts.loading ? (
-            <Box>
-              <PostSkeleton />
-            </Box>
-          ) : posts.data?.getAllPosts ? (
-            posts.data?.getAllPosts.map((p) => (
-              <Box key={p.id}>
-                <Post user={data?.currentUser!} post={p as PostType} />
+        <Grid container>
+          <Grid item lg={3}>
+            <Hidden mdDown implementation="css">
+              <Box position="fixed">
+                <People />
               </Box>
-            ))
-          ) : null}
-        </Box>
-        <Hidden implementation="css" smDown>
-          <Box right={32} position="fixed">
-            <Paper className={classes.paper}>
-              <h1>content</h1>
-            </Paper>
-          </Box>
-        </Hidden>
+            </Hidden>
+          </Grid>
+          <Grid item md={8} lg={6} xs={12}>
+            {/* Create Post */}
+
+            <Box maxWidth="700px" mx="auto">
+              <Box mb={2}>
+                <Button color="primary" variant="contained" fullWidth onClick={handleModalOpen}>
+                  Create Post
+                </Button>
+              </Box>
+              {posts.loading ? (
+                <Box>
+                  <PostSkeleton />
+                </Box>
+              ) : posts.data?.getAllPosts ? (
+                posts.data?.getAllPosts.map((p) => (
+                  <Box key={p.id}>
+                    <Post post={p as PostType} />
+                  </Box>
+                ))
+              ) : null}
+            </Box>
+          </Grid>
+          <Grid item md={4} lg={3}>
+            <Hidden implementation="css" smDown>
+              <Box right={32} position="fixed">
+                <Paper className={classes.paper}>
+                  <Typography variant="h6" align="center">
+                    Poeple to follow
+                  </Typography>
+                </Paper>
+              </Box>
+            </Hidden>
+          </Grid>
+        </Grid>
       </Box>
+      <CreatePostModal {...props} />
     </Layout>
   )
 }

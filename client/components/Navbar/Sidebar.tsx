@@ -13,13 +13,13 @@ import {
 import { useTheme, makeStyles } from '@material-ui/core/styles'
 import { Chat, Home } from 'heroicons-react'
 import React from 'react'
-import { User } from '../../generated/graphql'
+import { CurrentUserFragment } from '../../generated/graphql'
 import { useUIStore } from '../../lib/store'
 import Copyright from '../Copyright'
 import Link from '../Link'
 
-interface Sidebar {
-  user: User
+interface SidebarProps {
+  user: CurrentUserFragment
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -61,10 +61,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-interface SidebarProps {
-  user?: User
-}
-
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const classes = useStyles()
   const open = useUIStore((state) => state.drawerOpen)
@@ -73,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   const theme = useTheme()
   const mobile = useMediaQuery(theme.breakpoints.down('md'))
+  console.log(user?.avatar_url)
 
   return (
     <SwipeableDrawer
@@ -98,10 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             pt={2}
             pb={2}
           >
-            <Avatar
-              src="https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?ixid=MXwxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80"
-              className={classes.avatar}
-            />
+            <Avatar src={user.avatar_url!} className={classes.avatar} />
             <Typography variant="h6" color="textPrimary">
               {user.firstName} {user.lastName}
             </Typography>

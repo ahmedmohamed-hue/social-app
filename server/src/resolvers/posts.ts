@@ -3,6 +3,7 @@ import {
   Authorized,
   Ctx,
   Field,
+  FieldResolver,
   Mutation,
   ObjectType,
   Publisher,
@@ -14,11 +15,22 @@ import {
   Subscription,
 } from 'type-graphql'
 import Post from '../entities/Post'
+import User from '../entities/User'
 import { Context, Notification, NotificationPayload, postInput } from '../utils/types'
 
-@Resolver()
+@Resolver(Post)
 export default class PostResolver {
   private autoIncrement = 0
+
+  @FieldResolver(() => User)
+  creator(@Root() post: Post, @Ctx() { userLoader }: Context) {
+    return userLoader.load(post.creatorId)
+  }
+
+  @FieldResolver(() => Boolean)
+  owner(@Root() post: Post, @Ctx() { req }: Context) {
+    return post.creatorId === req.session.userId
+  }
 
   @Query(() => [Post])
   getAllPosts() {
@@ -44,6 +56,14 @@ export default class PostResolver {
     console.log(post)
 
     return post
+  }
+
+  @Authorized()
+  @Mutation(() => Boolean)
+  async deletePost(@Arg('id') id: string, @Ctx() { req }: Context) {
+    await Post.delete({ id, creatorId: req.session.userId })
+
+    return true
   }
 
   // Testing

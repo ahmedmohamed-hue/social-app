@@ -3,8 +3,8 @@ import { grey } from '@material-ui/core/colors'
 import clsx from 'clsx'
 import dayjs from 'dayjs'
 import React from 'react'
-import { User as UserType } from '../generated/graphql'
-import Link from './Link'
+import { RegularUserFragment } from '../../generated/graphql'
+import Link from '../../components/Link'
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -25,27 +25,26 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 interface UserProps {
-  user?: UserType
+  user?: RegularUserFragment
   offline?: boolean
 }
 
 const User: React.FC<UserProps> = ({ user }) => {
   const classes = useStyles()
 
+  if (!user) return null
+
   return (
-    <Link href={`/${user?.username}`}>
+    <Link href={`/${user.username}`}>
       <Box display="flex" alignItems="center" width="100%" mx={2} p={1} pt={2}>
-        <Avatar
-          src="https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?ixid=MXwxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80"
-          className={classes.avatar}
-        />
+        <Avatar src={user.avatar_url!} className={classes.avatar} />
         <Box display="flex" justifyContent="center" flexDirection="column">
           <Typography variant="body2" color="textPrimary">
-            {user?.firstName} {user?.lastName}
+            {user.firstName} {user.lastName}
           </Typography>
           <Box display="flex" width="100%" alignItems="center">
             <Typography variant="caption" color="textSecondary">
-              {user?.onlineStatus ? 'Online' : dayjs(user?.lastSeen!).fromNow()}
+              {user.onlineStatus ? 'Online' : dayjs(user.lastSeen!).fromNow()}
             </Typography>
             <div
               className={clsx(classes.status, {

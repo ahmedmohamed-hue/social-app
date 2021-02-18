@@ -142,7 +142,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
         aria-haspopup="true"
         onClick={handleToggle}
       >
-        <Avatar src="https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?ixid=MXwxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80" />
+        <Avatar src={user.avatar_url!} />
       </IconButton>
       <Popper
         open={open}
@@ -158,10 +158,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
               <ClickAwayListener onClickAway={handleClose}>
                 <Box>
                   <Box display="flex" alignItems="center" mx={2} width="100%" paddingTop={2}>
-                    <Avatar
-                      src="https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?ixid=MXwxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80"
-                      className={classes.avatar}
-                    />
+                    <Avatar src={user.avatar_url!} className={classes.avatar} />
                     <Box display="flex" flexDirection="column" ml={1}>
                       <Typography
                         component={Link}

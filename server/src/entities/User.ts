@@ -35,9 +35,14 @@ export default class User extends BaseEntity {
   @Column('text')
   password: string
 
+  @Column({ nullable: true })
+  @Field({ nullable: true })
+  avatar_url: string
+
   @Column('text', { default: 'USER' })
   role: string
 
+  @Field(() => [Post])
   @OneToMany(() => Post, (post) => post.creator)
   posts: Post[]
 

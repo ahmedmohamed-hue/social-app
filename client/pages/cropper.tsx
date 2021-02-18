@@ -1,11 +1,21 @@
 import React, { useState } from 'react'
 import Cropper from 'react-cropper'
 import 'cropperjs/dist/cropper.css'
+import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core'
+import useModal from '../components/useModal'
+import ProfileAvtarModal from '../components/Modals/ProfileAvatarModal'
+import { useAddAvatarMutation, useCurrentUserQuery } from '../generated/graphql'
+import { withApollo } from '../lib/apolloClient'
 
 const defaultSrc =
   'https://raw.githubusercontent.com/roadmanfong/react-cropper/master/example/img/child.jpg'
 
 export const Demo: React.FC = () => {
+  const [props, handleOpen] = useModal()
+
+  const { data } = useCurrentUserQuery()
+  const [upload] = useAddAvatarMutation()
+
   const [image, setImage] = useState(defaultSrc)
   const [cropData, setCropData] = useState('#')
   const [cropper, setCropper] = useState<any>()
@@ -27,22 +37,31 @@ export const Demo: React.FC = () => {
   const getCropData = () => {
     if (typeof cropper !== 'undefined') {
       setCropData(cropper.getCroppedCanvas().toDataURL())
+      cropper.getCroppedCanvas().toBlob(async (blob: any) => {
+        const file = new File([blob], 'dada')
+        // console.log(file)
+        upload({ variables: { file } })
+          .then((res) => {
+            console.log(res)
+          })
+          .catch((e) => {
+            console.log(e)
+          })
+      })
     }
   }
 
   return (
     <div>
-      <div style={{ width: '100%' }}>
-        <input type="file" onChange={onChange} />
-        <button>Use default img</button>
-        <br />
-        <br />
+      <Button onClick={handleOpen}>click</Button>
+      <Dialog {...props} style={{ minWidth: '500px' }}>
+        <DialogTitle>Edit your image</DialogTitle>
         <Cropper
-          style={{ height: 400, width: '100%' }}
+          style={{ height: 400, overflow: 'hidden' }}
           initialAspectRatio={1}
-          preview=".img-preview"
-          src={image}
-          viewMode={1}
+          src={data?.currentUser?.avatar_url!}
+          viewMode={3}
+          async
           minCropBoxHeight={10}
           minCropBoxWidth={10}
           background={false}
@@ -55,56 +74,16 @@ export const Demo: React.FC = () => {
             setCropper(instance)
           }}
         />
-      </div>
-      <div>
-        <div
-          style={{
-            width: '50%',
-            float: 'right',
-            display: 'inline-block',
-            padding: '10px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <h1>Preview</h1>
-          <div
-            className="img-preview"
-            style={{
-              width: '100%',
-              float: 'left',
-              height: '300px',
-              overflow: 'hidden',
-              borderRadius: '50%',
-            }}
-          />
-        </div>
-        <div
-          className="box"
-          style={{
-            width: '50%',
-            float: 'right',
-            height: '300px',
-            display: 'inline-block',
-            padding: '10px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <h1>
-            <span>Crop</span>
-            <button style={{ float: 'right' }} onClick={getCropData}>
-              Crop Image
-            </button>
-          </h1>
-          <img
-            style={{ width: '256px', height: '256px', borderRadius: '50%' }}
-            src={cropData}
-            alt="cropped"
-          />
-        </div>
-      </div>
-      <br style={{ clear: 'both' }} />
+        <DialogActions style={{ padding: '16px' }}>
+          <Button>Cancel</Button>
+          <Button onClick={getCropData} variant="contained" color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <div>{cropData ? <img style={{ borderRadius: '50%' }} src={cropData} alt="" /> : null}</div>
     </div>
   )
 }
 
-export default Demo
+export default withApollo({ ssr: true })(Demo)

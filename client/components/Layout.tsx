@@ -1,4 +1,4 @@
-import { Box, Container, useMediaQuery } from '@material-ui/core'
+import { Box, useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import useTheme from '@material-ui/core/styles/useTheme'
 import clsx from 'clsx'
@@ -16,7 +16,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const Layout: React.FC = ({ children }) => {
+interface LayoutProps {
+  className?: string
+}
+
+const Layout: React.FC<LayoutProps> = ({ children, className }) => {
   const classes = useStyles()
 
   const theme = useTheme()
@@ -26,7 +30,7 @@ const Layout: React.FC = ({ children }) => {
       <Navbar />
       <Box
         mt={8}
-        className={clsx({
+        className={clsx(className, {
           [classes.shitContent]: !mobile,
         })}
       >

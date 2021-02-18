@@ -2,6 +2,8 @@ import { IsEmail, Length, Min } from 'class-validator'
 import { Request, Response, Express } from 'express'
 import { SessionData } from 'express-session'
 import { Field, ID, InputType, ObjectType } from 'type-graphql'
+import { userLoader } from './userLoader'
+import { Stream } from 'stream'
 
 declare module 'express-session' {
   export interface SessionData {
@@ -12,6 +14,14 @@ declare module 'express-session' {
 export type Context = {
   req: Request & { session: SessionData }
   res: Response
+  userLoader: ReturnType<typeof userLoader>
+}
+
+export type Upload = {
+  filename: string
+  mimetype: string
+  encoding: string
+  createReadStream: () => Stream
 }
 
 @InputType()
@@ -47,17 +57,17 @@ export class postInput {
 
 @ObjectType()
 export class Notification {
-  @Field(type => ID)
-  id: number;
+  @Field((type) => ID)
+  id: number
 
   @Field({ nullable: true })
-  message?: string;
+  message?: string
 
-  @Field(type => Date)
-  date: Date;
+  @Field((type) => Date)
+  date: Date
 }
 
 export interface NotificationPayload {
-  id: number;
-  message?: string;
+  id: number
+  message?: string
 }

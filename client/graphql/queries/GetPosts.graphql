@@ -5,6 +5,7 @@ query getPosts {
     title
     createdAt
     creatorId
+    owner
     creator {
       username
       firstName

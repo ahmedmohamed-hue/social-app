@@ -15,6 +15,9 @@ import http from 'http'
 import { Context } from './utils/types'
 import User from './entities/User'
 import cookie from 'cookie'
+import { userLoader } from './utils/userLoader'
+import { graphqlUploadExpress } from 'graphql-upload'
+import path from 'path'
 
 const main = async () => {
   try {
@@ -45,6 +48,7 @@ const main = async () => {
   })
 
   app.use(mySession)
+  app.use(graphqlUploadExpress())
 
   const schema = await buildSchema({
     resolvers: [HelloResolver, UserResovler, PostResolver],
@@ -53,14 +57,14 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, res }) => ({ req, res }),
+    uploads: false,
+    context: ({ req, res }) => ({ req, res, userLoader: userLoader() }),
     // playground: true,
     subscriptions: {
       path: '/subscriptions',
       // @ts-ignore
       onConnect: async (connectionParams, webSocket, { request }: { request: Request }) => {
         mySession(request, {} as Response, () => {
-          console.log(request.session.userId)
           const userId = request.session.userId
 
           User.findOne({ where: { id: userId } }).then(async (user) => {
@@ -76,13 +80,11 @@ const main = async () => {
       // @ts-ignore
       onDisconnect: (webSocket, { request }: { request: Request }) => {
         mySession(request, {} as Response, () => {
-          console.log(request.session.userId)
           const userId = request.session.userId
           if (userId) {
             User.findOne({ where: { id: userId } }).then(async (user) => {
               if (user) {
                 if (!user.isVisible) {
-                  console.log(user.isVisible)
                   user.onlineStatus = false
                   user.lastSeen = new Date()
                   await user.save()
@@ -99,6 +101,8 @@ const main = async () => {
 
   apolloServer.applyMiddleware({ app, cors: false })
   apolloServer.installSubscriptionHandlers(httpServer)
+
+  app.use('/static', express.static(path.join(__dirname, 'public')))
 
   app.use(
     cors({

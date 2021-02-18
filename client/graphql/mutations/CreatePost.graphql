@@ -1,5 +1,5 @@
-query getPost($id: Float!) {
-  getPost(id: $id) {
+mutation createPost($title: String!, $body: String!) {
+  createPost(options: { title: $title, body: $body }) {
     id
     body
     title
