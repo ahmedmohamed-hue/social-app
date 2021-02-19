@@ -1,18 +1,17 @@
-import {
-  Divider,
-  Box,
-  useMediaQuery,
-  SwipeableDrawer,
-  Avatar,
-  Typography,
-  List,
-  ListItemText,
-  ListItem,
-  ListItemIcon,
-} from '@material-ui/core'
-import { useTheme, makeStyles } from '@material-ui/core/styles'
+import Avatar from '@material-ui/core/Avatar'
+import Box from '@material-ui/core/Box'
+import Divider from '@material-ui/core/Divider'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import makeStyles from '@material-ui/core/styles/makeStyles'
+import useTheme from '@material-ui/core/styles/useTheme'
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
+import Typography from '@material-ui/core/Typography'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { Chat, Home } from 'heroicons-react'
-import React from 'react'
+import React, { Fragment } from 'react'
 import { CurrentUserFragment } from '../../generated/graphql'
 import { useUIStore } from '../../lib/store'
 import Copyright from '../Copyright'
@@ -69,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   const theme = useTheme()
   const mobile = useMediaQuery(theme.breakpoints.down('md'))
-  console.log(user?.avatar_url)
 
   return (
     <SwipeableDrawer
@@ -84,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       onClose={closeDrawer}
     >
       {user ? (
-        <>
+        <Fragment>
           <Box
             display="flex"
             flexDirection="column"
@@ -111,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <Divider
             style={{ width: '80%', margin: '0 auto', height: '2px', marginBottom: '1.5rem' }}
           />
-        </>
+        </Fragment>
       ) : null}
       <List style={{ paddingTop: 0 }}>
         <ListItem button component={Link} href="/" activeClassName={classes.active}>

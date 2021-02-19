@@ -6,6 +6,8 @@ mutation createPost($title: String!, $body: String!) {
     createdAt
     creatorId
     owner
+    likes
+    likeStatus
     creator {
       username
       firstName

@@ -1,35 +1,31 @@
-import React from 'react'
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
-import {
-  Avatar,
-  Box,
-  ClickAwayListener,
-  Divider,
-  Grow,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
-  Switch,
-  Typography,
-} from '@material-ui/core'
-import { Logout, Moon, User } from 'heroicons-react'
-import SwitchTheme from '../SwitchTheme'
-import {
-  CurrentUserDocument,
-  CurrentUserQuery,
-  useLogoutMutation,
-  User as UserType,
-} from '../../generated/graphql'
-import { useApolloClient } from '@apollo/client'
-import { useRouter } from 'next/router'
-import Link from '../Link'
+import { gql, useApolloClient } from '@apollo/client'
+import Avatar from '@material-ui/core/Avatar'
+import Box from '@material-ui/core/Box'
+import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import { grey } from '@material-ui/core/colors'
+import Divider from '@material-ui/core/Divider'
+import Grow from '@material-ui/core/Grow'
+import IconButton from '@material-ui/core/IconButton'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import MenuItem from '@material-ui/core/MenuItem'
+import MenuList from '@material-ui/core/MenuList'
+import Paper from '@material-ui/core/Paper'
+import Popper from '@material-ui/core/Popper'
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
+import Switch from '@material-ui/core/Switch'
+import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
-import { useToggleStatusMutation } from '../../generated/graphql'
+import { Logout, Moon, User } from 'heroicons-react'
+import { useRouter } from 'next/router'
+import React from 'react'
+import {
+  CurrentUserFragment,
+  useLogoutMutation,
+  useToggleStatusMutation,
+} from '../../generated/graphql'
+import Link from '../Link'
+import SwitchTheme from '../SwitchTheme'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -70,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) =>
 )
 
 interface DropdownMenuProps {
-  user: UserType
+  user: CurrentUserFragment
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
@@ -80,11 +76,16 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
 
   const [toggleStatus] = useToggleStatusMutation({
     update: (cache, { data }) => {
-      cache.writeQuery<CurrentUserQuery>({
-        query: CurrentUserDocument,
+      cache.writeFragment({
+        id: 'User:' + user.id,
+        fragment: gql`
+          fragment __ on User {
+            onlineStatus
+          }
+        `,
         data: {
-          __typename: 'Query',
-          currentUser: data?.toggleStatus,
+          onlineStatus: data?.toggleStatus?.onlineStatus,
+          lastSeen: data?.toggleStatus?.lastSeen,
         },
       })
     },
@@ -113,7 +114,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
     }
   }
 
-  // return focus to the button when we transitioned from !open -> open
   const prevOpen = React.useRef(open)
   React.useEffect(() => {
     if (prevOpen.current === true && open === false) {

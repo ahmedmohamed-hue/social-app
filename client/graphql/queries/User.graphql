@@ -1,8 +1,9 @@
-query GetUser($username: String!) {
+query User($username: String!) {
   getUser(username: $username) {
     id
     email
     firstName
+    username
     lastName
     onlineStatus
     lastSeen
@@ -13,6 +14,8 @@ query GetUser($username: String!) {
       createdAt
       owner
       id
+      likes
+      likeStatus
     }
   }
 }

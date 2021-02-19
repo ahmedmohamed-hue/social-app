@@ -4,17 +4,20 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import User from './User'
+import Like from './Like'
 
 @ObjectType()
 @Entity('Post')
 export default class Post extends BaseEntity {
   @PrimaryGeneratedColumn('increment')
   @Field()
-  id: string
+  id: number
 
   @Column()
   @Field()
@@ -27,6 +30,13 @@ export default class Post extends BaseEntity {
   @Column()
   @Field()
   creatorId: string
+
+  @Field()
+  @Column({ type: 'int', default: 0 })
+  likes: number
+
+  @OneToMany(() => Like, (like) => like.post)
+  like: Like
 
   @ManyToOne(() => User, (user) => user.posts)
   creator: User

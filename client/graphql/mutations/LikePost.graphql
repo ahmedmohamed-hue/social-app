@@ -1,0 +1,6 @@
+mutation like($value: Boolean!, $postId: Float!) {
+  like(value: $value, postId: $postId) {
+    likeStatus
+    likes
+  }
+}

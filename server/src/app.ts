@@ -18,6 +18,7 @@ import cookie from 'cookie'
 import { userLoader } from './utils/userLoader'
 import { graphqlUploadExpress } from 'graphql-upload'
 import path from 'path'
+import { createLikeLoader } from './utils/likeLoader'
 
 const main = async () => {
   try {
@@ -58,7 +59,12 @@ const main = async () => {
   const apolloServer = new ApolloServer({
     schema,
     uploads: false,
-    context: ({ req, res }) => ({ req, res, userLoader: userLoader() }),
+    context: ({ req, res }) => ({
+      req,
+      res,
+      userLoader: userLoader(),
+      likeLoader: createLikeLoader(),
+    }),
     // playground: true,
     subscriptions: {
       path: '/subscriptions',

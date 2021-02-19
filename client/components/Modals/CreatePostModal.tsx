@@ -8,14 +8,14 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import { Box, IconButton, makeStyles } from '@material-ui/core'
 import { X } from 'heroicons-react'
 import { useFormik } from 'formik'
-import { GetPostsDocument, GetPostsQuery, useCreatePostMutation } from '../../generated/graphql'
+import { PostsDocument, PostsQuery, useCreatePostMutation } from '../../generated/graphql'
 
 interface CreatePostModalProps {
   open: boolean
   handleClose: () => void
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     minWidth: '500px',
   },
@@ -41,21 +41,19 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
         variables: values,
         update: (cache, { data }) => {
           if (data?.createPost) {
-            const oldPosts = cache.readQuery<GetPostsQuery>({ query: GetPostsDocument })
+            const oldPosts = cache.readQuery<PostsQuery>({ query: PostsDocument })
 
-            cache.writeQuery<GetPostsQuery>({
-              query: GetPostsDocument,
+            cache.writeQuery<PostsQuery>({
+              query: PostsDocument,
               data: {
                 getAllPosts: [data?.createPost!, ...oldPosts?.getAllPosts!],
               },
             })
           }
         },
+      }).then(() => {
+        reset()
       })
-        .then(() => {
-          reset()
-        })
-        .catch(console.log)
     },
   })
 

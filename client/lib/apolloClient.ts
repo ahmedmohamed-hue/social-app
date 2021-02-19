@@ -7,14 +7,12 @@ import { createUploadLink } from 'apollo-upload-client'
 import { onError } from '@apollo/client/link/error'
 
 const wsLink = process.browser
-  ? (ctx: NextPageContext) => {
-      return new WebSocketLink({
-        uri: 'ws://localhost:4000/subscriptions',
-        options: {
-          reconnect: true,
-        },
-      })
-    }
+  ? new WebSocketLink({
+      uri: 'ws://localhost:4000/subscriptions',
+      options: {
+        reconnect: true,
+      },
+    })
   : null
 
 const httpLink = (ctx: NextPageContext) =>
@@ -35,7 +33,7 @@ const splitLink = process.browser
             definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
           )
         },
-        wsLink!(ctx),
+        wsLink!,
         httpLink(ctx)
       )
   : httpLink

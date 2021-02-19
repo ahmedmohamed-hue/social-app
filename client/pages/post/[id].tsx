@@ -1,35 +1,36 @@
+import Box from '@material-ui/core/Box'
+import Container from '@material-ui/core/Container'
 import { useRouter } from 'next/router'
-import PostComponent from '../../components/Post'
-import React, { Fragment } from 'react'
+import React from 'react'
 import Layout from '../../components/Layout'
-import { useGetPostQuery, Post as PostType } from '../../generated/graphql'
+import PostComponent from '../../components/Post'
+import { Post as PostType, useCurrentUserQuery, usePostQuery } from '../../generated/graphql'
 import { withApollo } from '../../lib/apolloClient'
-import { Box, Container } from '@material-ui/core'
 
 const Post: React.FC = () => {
   const router = useRouter()
-
   const { id } = router.query
 
-  const { data, error, loading } = useGetPostQuery({ variables: { id: parseInt(id as string) } })
+  const { data, error, loading } = usePostQuery({ variables: { id: parseInt(id as string) } })
+  const currentUser = useCurrentUserQuery()
 
   if (loading) {
     return null
   }
 
-  if (error) {
+  if (error && !loading) {
     router.push('/')
   }
 
-  if (!data?.getPost && !loading) {
+  if (!data?.getPost) {
     return <h1>Not found</h1>
   }
 
   return (
     <Layout>
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box display="flex" width="100%" justifyContent="center" pt={3}>
-          {data?.getPost ? <PostComponent post={data.getPost! as PostType} /> : null}
+          <PostComponent isUser={!!currentUser.data?.currentUser} post={data.getPost as PostType} />
         </Box>
       </Container>
     </Layout>

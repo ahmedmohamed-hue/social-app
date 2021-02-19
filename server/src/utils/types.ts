@@ -4,6 +4,7 @@ import { SessionData } from 'express-session'
 import { Field, ID, InputType, ObjectType } from 'type-graphql'
 import { userLoader } from './userLoader'
 import { Stream } from 'stream'
+import { createLikeLoader } from './likeLoader'
 
 declare module 'express-session' {
   export interface SessionData {
@@ -15,6 +16,7 @@ export type Context = {
   req: Request & { session: SessionData }
   res: Response
   userLoader: ReturnType<typeof userLoader>
+  likeLoader: ReturnType<typeof createLikeLoader>
 }
 
 export type Upload = {

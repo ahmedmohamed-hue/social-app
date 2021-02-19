@@ -8,6 +8,7 @@ import {
   FieldResolver,
   InputType,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
   Root,
@@ -17,6 +18,15 @@ import User from '../entities/User'
 import { Context, registerInput, Upload } from '../utils/types'
 import { createWriteStream, unlink } from 'fs'
 import { extension } from 'mime-types'
+
+@ObjectType()
+class ToggleOnline {
+  @Field()
+  onlineStatus: boolean
+
+  @Field()
+  lastSeen: Date
+}
 
 @Resolver(User)
 export default class UserResovler {
@@ -133,7 +143,7 @@ export default class UserResovler {
   }
 
   @Authorized()
-  @Mutation(() => User, { nullable: true })
+  @Mutation(() => ToggleOnline, { nullable: true })
   async toggleStatus(@Ctx() ctx: Context) {
     const user = await User.findOne({ where: { id: ctx.req.session.userId } })
     if (!user) {
@@ -149,11 +159,13 @@ export default class UserResovler {
       user.isVisible = false
     }
 
-    return user.save()
+    const { lastSeen, onlineStatus } = await user.save()
+
+    return { onlineStatus, lastSeen }
   }
 
   @Authorized()
-  @Mutation(() => Boolean)
+  @Mutation(() => String)
   async addAvatar(@Arg('file', (type) => GraphQLUpload) file: FileUpload, @Ctx() { req }: Context) {
     const user = await User.findOne({ id: req.session.userId })
     console.log(file.mimetype)
@@ -167,7 +179,7 @@ export default class UserResovler {
           if (user) {
             user.avatar_url = `http://localhost:4000/static/avatars/${fileName}`
             await user.save()
-            resolve(true)
+            resolve(user.avatar_url)
           }
         })
         .on('error', (e) => {

@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import Post from './Post'
+import Like from './Like'
 
 @ObjectType()
 @Entity('user')
@@ -45,6 +46,9 @@ export default class User extends BaseEntity {
   @Field(() => [Post])
   @OneToMany(() => Post, (post) => post.creator)
   posts: Post[]
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like
 
   @Column({ default: true })
   @Field()

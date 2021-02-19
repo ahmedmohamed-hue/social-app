@@ -63,7 +63,7 @@ const login: React.FC = () => {
     onSubmit: (values) => {
       login({
         variables: values,
-        update: (cache, { data }) => {
+        update: async (cache, { data }) => {
           cache.writeQuery<CurrentUserQuery>({
             query: CurrentUserDocument,
             data: {
@@ -73,7 +73,7 @@ const login: React.FC = () => {
           })
         },
       })
-        .then(() => {
+        .then(async () => {
           router.push('/')
         })
         .catch((e) => {

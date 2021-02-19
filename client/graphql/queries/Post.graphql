@@ -1,15 +1,18 @@
-query getPosts {
-  getAllPosts {
+query Post($id: Float!) {
+  getPost(id: $id) {
     id
     body
     title
     createdAt
     creatorId
     owner
+    likes
+    likeStatus
     creator {
       username
       firstName
       lastName
+      avatar_url
     }
   }
 }

@@ -1,6 +1,6 @@
-import { Typography } from "@material-ui/core";
-import React from "react";
-import Link from "./Link";
+import { Typography } from '@material-ui/core'
+import React from 'react'
+import Link from './Link'
 
 export default function Copyright() {
   return (
@@ -14,5 +14,5 @@ export default function Copyright() {
         {'.'}
       </Typography>
     </div>
-  );
+  )
 }

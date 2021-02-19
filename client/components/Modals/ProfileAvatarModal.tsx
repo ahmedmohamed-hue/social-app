@@ -1,17 +1,18 @@
-import React, { useState } from 'react'
+import { gql } from '@apollo/client'
+import { Box, Button, CircularProgress, DialogActions, DialogTitle } from '@material-ui/core'
 import Dialog from '@material-ui/core/Dialog'
 import { makeStyles } from '@material-ui/core/styles'
-import Cropper from 'react-cropper'
 import 'cropperjs/dist/cropper.css'
-
-import { DialogActions, Button, DialogTitle, Box, CircularProgress } from '@material-ui/core'
+import React, { useState } from 'react'
+import Cropper from 'react-cropper'
 import { useAddAvatarMutation } from '../../generated/graphql'
 
 interface DeleteModalProps {
   open: boolean
   handleClose: () => void
-  user: any
-  refetch: any
+  img: any
+  file: any
+  userId: string
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -23,24 +24,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const ProfileAvtarModal: React.FC<DeleteModalProps> = ({ open, handleClose, user, refetch }) => {
+const ProfileAvtarModal: React.FC<DeleteModalProps> = ({
+  open,
+  handleClose,
+  img,
+  file,
+  userId,
+}) => {
   const classes = useStyles()
 
-  const [upload, { loading, data }] = useAddAvatarMutation()
+  const [upload, { loading }] = useAddAvatarMutation({
+    update: (cache, { data }) => {
+      cache.writeFragment({
+        id: 'User:' + userId,
+        fragment: gql`
+          fragment __ on User {
+            avatar_url
+          }
+        `,
+        data: { avatar_url: data?.addAvatar },
+      })
+    },
+  })
 
   const [cropper, setCropper] = useState<any>()
-  // const onChange = (e: any) => {
-  //   e.preventDefault()
-  //   let files
-  //   if (e.dataTransfer) {
-  //     files = e.dataTransfer.files
-  //   } else if (e.target) {
-  //     files = e.target.files
-  //   }
-  //   const reader = new FileReader()
-
-  //   reader.readAsDataURL(files[0])
-  // }
 
   const getCropData = () => {
     if (typeof cropper !== 'undefined') {
@@ -51,7 +58,6 @@ const ProfileAvtarModal: React.FC<DeleteModalProps> = ({ open, handleClose, user
         try {
           await upload({ variables: { file } })
           handleClose()
-          await refetch()
         } catch (e) {
           console.log(e)
         }
@@ -70,7 +76,7 @@ const ProfileAvtarModal: React.FC<DeleteModalProps> = ({ open, handleClose, user
       keepMounted={false}
     >
       <DialogTitle>Edit your image</DialogTitle>
-      {loading && data ? (
+      {loading ? (
         <Box width="100%" height="300px" display="flex" alignItems="center" justifyContent="center">
           <CircularProgress />
         </Box>
@@ -79,7 +85,7 @@ const ProfileAvtarModal: React.FC<DeleteModalProps> = ({ open, handleClose, user
           <Cropper
             style={{ height: 400, overflow: 'hidden' }}
             initialAspectRatio={1}
-            src={user.avatar_url}
+            src={file ? file : img}
             viewMode={3}
             minCropBoxHeight={10}
             minCropBoxWidth={10}

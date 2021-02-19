@@ -1,10 +1,13 @@
-import { Box, Avatar, Typography, makeStyles } from '@material-ui/core'
-import { grey } from '@material-ui/core/colors'
 import clsx from 'clsx'
 import dayjs from 'dayjs'
 import React from 'react'
 import { RegularUserFragment } from '../../generated/graphql'
 import Link from '../../components/Link'
+import { makeStyles } from '@material-ui/core/styles'
+import grey from '@material-ui/core/colors/grey'
+import Box from '@material-ui/core/Box'
+import Avatar from '@material-ui/core/Avatar'
+import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -26,13 +29,14 @@ const useStyles = makeStyles((theme) => ({
 
 interface UserProps {
   user?: RegularUserFragment
-  offline?: boolean
 }
 
 const User: React.FC<UserProps> = ({ user }) => {
   const classes = useStyles()
 
   if (!user) return null
+
+  const fromNowDate = dayjs(user.lastSeen!).fromNow()
 
   return (
     <Link href={`/${user.username}`}>
@@ -44,7 +48,7 @@ const User: React.FC<UserProps> = ({ user }) => {
           </Typography>
           <Box display="flex" width="100%" alignItems="center">
             <Typography variant="caption" color="textSecondary">
-              {user.onlineStatus ? 'Online' : dayjs(user.lastSeen!).fromNow()}
+              {user.onlineStatus ? 'Online' : fromNowDate}
             </Typography>
             <div
               className={clsx(classes.status, {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCurrentUserQuery, useGetPostsQuery, useGetUsersQuery } from '../generated/graphql'
+import { useCurrentUserQuery, usePostsQuery } from '../generated/graphql'
 import { withApollo } from '../lib/apolloClient'
 import Layout from '../components/Layout'
 import {
@@ -53,7 +53,7 @@ const Index: React.FC = () => {
   const router = useRouter()
 
   const { data } = useCurrentUserQuery()
-  const posts = useGetPostsQuery()
+  const posts = usePostsQuery()
 
   const classes = useStyles()
   const theme = useTheme()
@@ -100,7 +100,7 @@ const Index: React.FC = () => {
               ) : posts.data?.getAllPosts ? (
                 posts.data?.getAllPosts.map((p) => (
                   <Box key={p.id}>
-                    <Post post={p as PostType} />
+                    <Post isUser={!!data?.currentUser} post={p as PostType} />
                   </Box>
                 ))
               ) : null}

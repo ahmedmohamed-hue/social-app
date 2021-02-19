@@ -8,7 +8,7 @@ import { isServer } from '../lib/isServer'
 import { useUIStore } from '../lib/store'
 import { Router } from 'next/router'
 import 'nprogress/nprogress.css'
-import './styles.css'
+import '../public/styles.css'
 import NProgress from 'nprogress'
 
 NProgress.configure({ showSpinner: false })

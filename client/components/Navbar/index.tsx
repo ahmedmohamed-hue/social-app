@@ -1,5 +1,10 @@
-import { AppBar, Button, IconButton, Toolbar, Typography, useMediaQuery } from '@material-ui/core'
+import AppBar from '@material-ui/core/AppBar'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 import clsx from 'clsx'
 import { Menu } from 'heroicons-react'
 import React from 'react'
@@ -24,12 +29,9 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  dotsIcons: {
-    color: '#fff',
-  },
 }))
 
-const index: React.FC = () => {
+const Navbar: React.FC = () => {
   const classes = useStyles()
   const openDrawer = useUIStore((state) => state.openDrawer)
 
@@ -78,4 +80,4 @@ const index: React.FC = () => {
   )
 }
 
-export default index
+export default Navbar

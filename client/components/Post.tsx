@@ -1,28 +1,29 @@
-import {
-  Avatar,
-  Box,
-  Divider,
-  IconButton,
-  makeStyles,
-  Menu,
-  MenuItem,
-  Paper,
-  Typography,
-} from '@material-ui/core'
+import { gql } from '@apollo/client'
+import Avatar from '@material-ui/core/Avatar'
+import Box from '@material-ui/core/Box'
+import Divider from '@material-ui/core/Divider'
+import IconButton from '@material-ui/core/IconButton'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import makeStyles from '@material-ui/core/styles/makeStyles'
+import Typography from '@material-ui/core/Typography'
 import dayjs from 'dayjs'
-import { ChatOutline, DotsHorizontalOutline, HeartOutline } from 'heroicons-react'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { ChatOutline, DotsHorizontalOutline, Heart, HeartOutline } from 'heroicons-react'
+import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import {
-  GetPostsDocument,
-  GetPostsQuery,
   Post as PostType,
+  PostsDocument,
+  PostsQuery,
   useDeletePostMutation,
+  useLikeMutation,
 } from '../generated/graphql'
-import relativeTime from 'dayjs/plugin/relativeTime'
+import isRTL from '../lib/isRTL'
 import Link from './Link'
-import { useRouter } from 'next/router'
-import useModal from './useModal'
 import DeleteModal from './Modals/DeleteConfirmModal'
+import useModal from './useModal'
 
 dayjs.extend(relativeTime)
 
@@ -40,27 +41,35 @@ const useStyles = makeStyles((theme) => ({
 interface PostProps {
   post?: PostType
   refetch?: any
+  isUser: boolean
 }
 
-function isRTL(s: string) {
-  let ltrChars =
-      'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u0300-\u0590\u0800-\u1FFF' +
-      '\u2C00-\uFB1C\uFDFE-\uFE6F\uFEFD-\uFFFF',
-    rtlChars = '\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC',
-    rtlDirCheck = new RegExp('^[^' + ltrChars + ']*[' + rtlChars + ']')
-
-  return rtlDirCheck.test(s)
-}
-
-const Post: React.FC<PostProps> = ({ post, refetch }) => {
+const Post: React.FC<PostProps> = ({ post, refetch, isUser }) => {
   const classes = useStyles()
-
-  const [props, handleOpen] = useModal()
+  const formattedDate = dayjs(parseInt(post?.createdAt!)).fromNow()
 
   const router = useRouter()
+  const [props, handleOpen] = useModal()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  // const formattedDate = dayjs(parseInt(post?.createdAt!)).format('MMMM DD [at] hh:mmA')
-  const formattedDate = dayjs(parseInt(post?.createdAt!)).fromNow()
+  const [like] = useLikeMutation({
+    update: (cache, { data }) => {
+      cache.writeFragment({
+        id: 'Post:' + post?.id!,
+        fragment: gql`
+          fragment __ on Post {
+            likeStatus
+            likes
+          }
+        `,
+        data: { likeStatus: data?.like?.likeStatus, likes: data?.like?.likes },
+      })
+    },
+    variables: {
+      postId: parseFloat(String(post?.id!)),
+      value: !post?.likeStatus!,
+    },
+  })
 
   const [deletePost] = useDeletePostMutation({
     variables: {
@@ -71,11 +80,11 @@ const Post: React.FC<PostProps> = ({ post, refetch }) => {
   const handleDelete = () => {
     deletePost({
       update: async (cache) => {
-        const oldPosts = cache.readQuery<GetPostsQuery>({ query: GetPostsDocument })
+        const oldPosts = cache.readQuery<PostsQuery>({ query: PostsDocument })
         const newPosts = oldPosts?.getAllPosts.filter((p) => p.id !== post?.id!)
 
-        cache.writeQuery<GetPostsQuery>({
-          query: GetPostsDocument,
+        cache.writeQuery<PostsQuery>({
+          query: PostsDocument,
           data: { getAllPosts: [...newPosts!] },
         })
         if (router.pathname !== '/' && !router.pathname.includes('/post')) {
@@ -92,7 +101,6 @@ const Post: React.FC<PostProps> = ({ post, refetch }) => {
       .catch(console.log)
   }
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
   }
@@ -106,11 +114,15 @@ const Post: React.FC<PostProps> = ({ post, refetch }) => {
     return null
   }
 
+  console.log(post.creator)
+
   return (
     <Paper className={classes.paper}>
       <Box p={2} display="flex" alignItems="center" justifyContent="space-between">
         <Box display="flex" alignItems="center">
-          <Avatar src={post.creator.avatar_url!} className={classes.avatar} />
+          <Link href={`/${post.creator.username}`}>
+            <Avatar src={post.creator.avatar_url!} className={classes.avatar} />
+          </Link>
           <Box>
             <Typography variant="h6" color="textPrimary">
               {post.creator.firstName} {post.creator.lastName}
@@ -126,13 +138,7 @@ const Post: React.FC<PostProps> = ({ post, refetch }) => {
           <DotsHorizontalOutline />
         </IconButton>
       </Box>
-      <Menu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} keepMounted={false} open={Boolean(anchorEl)} onClose={handleClose}>
         {post.owner ? <MenuItem onClick={handleOpen}>Delete</MenuItem> : null}
         <MenuItem>Open in new tab</MenuItem>
       </Menu>
@@ -145,11 +151,16 @@ const Post: React.FC<PostProps> = ({ post, refetch }) => {
       </Box>
       <Divider />
       <Box display="flex" alignItems="center" pl={1} pb={1}>
-        <IconButton>
-          <HeartOutline color="red" />
+        <IconButton
+          disabled={!isUser}
+          onClick={async () => {
+            await like()
+          }}
+        >
+          {post.likeStatus ? <Heart color="red" /> : <HeartOutline color="red" />}
         </IconButton>
         <Typography variant="subtitle2" color="textSecondary">
-          0
+          {post.likes}
         </Typography>
         <Box display="flex" alignItems="center" ml={1}>
           <IconButton>
