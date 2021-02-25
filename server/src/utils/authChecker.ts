@@ -1,9 +1,8 @@
 import { AuthChecker } from 'type-graphql'
-import User from '../entities/User'
-import { Context } from './types'
+import { Context } from '../types'
 
-export const authChecker: AuthChecker<Context> = async ({ context: { req } }, roles) => {
-  const user = await User.findOne({ where: { id: req.session.userId } })
+export const authChecker: AuthChecker<Context> = async ({ context: { req, prisma } }, roles) => {
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId } })
 
   if (roles.length === 0) {
     return !!user

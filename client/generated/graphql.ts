@@ -21,22 +21,28 @@ export type Query = {
   __typename?: 'Query';
   helloWorld: Scalars['String'];
   secert: Response;
+  postByUser: Array<Post>;
+  post?: Maybe<Post>;
+  paginatedPosts: PaginatedPosts;
   currentUser?: Maybe<User>;
-  getUser?: Maybe<User>;
-  getUsers: Array<User>;
-  getAllPosts: Array<Post>;
-  getPostByUser: Array<Post>;
-  getPost?: Maybe<Post>;
+  user?: Maybe<User>;
+  users: Array<User>;
 };
 
 
-export type QueryGetUserArgs = {
-  username: Scalars['String'];
-};
-
-
-export type QueryGetPostArgs = {
+export type QueryPostArgs = {
   id: Scalars['Float'];
+};
+
+
+export type QueryPaginatedPostsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Float'];
+};
+
+
+export type QueryUserArgs = {
+  username: Scalars['String'];
 };
 
 export type Response = {
@@ -45,6 +51,21 @@ export type Response = {
   code: Scalars['Int'];
 };
 
+export type Post = {
+  __typename?: 'Post';
+  id: Scalars['Int'];
+  title: Scalars['String'];
+  body: Scalars['String'];
+  creatorId: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  updateAt: Scalars['DateTime'];
+  creator: User;
+  likeStatus?: Maybe<Scalars['Boolean']>;
+  likes?: Maybe<Array<User>>;
+  owner: Scalars['Boolean'];
+};
+
+
 export type User = {
   __typename?: 'User';
   id: Scalars['String'];
@@ -52,40 +73,44 @@ export type User = {
   username: Scalars['String'];
   firstName: Scalars['String'];
   lastName: Scalars['String'];
-  avatar_url?: Maybe<Scalars['String']>;
-  posts: Array<Post>;
   onlineStatus: Scalars['Boolean'];
   lastSeen: Scalars['DateTime'];
+  avatar_url?: Maybe<Scalars['String']>;
+  posts: Array<Post>;
 };
 
-export type Post = {
-  __typename?: 'Post';
-  id: Scalars['Float'];
-  title: Scalars['String'];
-  body: Scalars['String'];
-  creatorId: Scalars['String'];
-  likes: Scalars['Float'];
-  createdAt: Scalars['String'];
-  updateAt: Scalars['String'];
-  creator: User;
-  likeStatus?: Maybe<Scalars['Boolean']>;
-  owner: Scalars['Boolean'];
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  posts: Array<Post>;
+  hasMore: Scalars['Boolean'];
 };
-
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createPost: Post;
+  deletePost: Scalars['Boolean'];
+  like?: Maybe<LikeResponse>;
   register: User;
   login?: Maybe<User>;
   logout: Scalars['Boolean'];
   toggleStatus?: Maybe<ToggleOnline>;
   addAvatar: Scalars['String'];
   removeAvatar: Scalars['Boolean'];
-  createPost: Post;
-  deletePost: Scalars['Boolean'];
-  like?: Maybe<LikeResponse>;
-  pubSubMutation: Scalars['Boolean'];
-  publisherMutation: Scalars['Boolean'];
+};
+
+
+export type MutationCreatePostArgs = {
+  options: PostInput;
+};
+
+
+export type MutationDeletePostArgs = {
+  id: Scalars['Int'];
+};
+
+
+export type MutationLikeArgs = {
+  postId: Scalars['Float'];
 };
 
 
@@ -104,30 +129,15 @@ export type MutationAddAvatarArgs = {
   file: Scalars['Upload'];
 };
 
-
-export type MutationCreatePostArgs = {
-  options: PostInput;
+export type PostInput = {
+  title: Scalars['String'];
+  body: Scalars['String'];
 };
 
-
-export type MutationDeletePostArgs = {
-  id: Scalars['Float'];
-};
-
-
-export type MutationLikeArgs = {
-  value: Scalars['Boolean'];
-  postId: Scalars['Float'];
-};
-
-
-export type MutationPubSubMutationArgs = {
-  message?: Maybe<Scalars['String']>;
-};
-
-
-export type MutationPublisherMutationArgs = {
-  message?: Maybe<Scalars['String']>;
+export type LikeResponse = {
+  __typename?: 'LikeResponse';
+  likes: Array<User>;
+  likeStatus: Scalars['Boolean'];
 };
 
 export type RegisterInput = {
@@ -144,29 +154,6 @@ export type ToggleOnline = {
   lastSeen: Scalars['DateTime'];
 };
 
-
-export type PostInput = {
-  title: Scalars['String'];
-  body: Scalars['String'];
-};
-
-export type LikeResponse = {
-  __typename?: 'LikeResponse';
-  likes: Scalars['Float'];
-  likeStatus: Scalars['Boolean'];
-};
-
-export type Subscription = {
-  __typename?: 'Subscription';
-  normalSubscription: Notification;
-};
-
-export type Notification = {
-  __typename?: 'Notification';
-  id: Scalars['ID'];
-  message?: Maybe<Scalars['String']>;
-  date: Scalars['DateTime'];
-};
 
 export type CurrentUserFragment = (
   { __typename?: 'User' }
@@ -198,8 +185,11 @@ export type CreatePostMutation = (
   { __typename?: 'Mutation' }
   & { createPost: (
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likes' | 'likeStatus'>
-    & { creator: (
+    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likeStatus'>
+    & { likes?: Maybe<Array<(
+      { __typename?: 'User' }
+      & RegularUserFragment
+    )>>, creator: (
       { __typename?: 'User' }
       & Pick<User, 'username' | 'firstName' | 'lastName'>
     ) }
@@ -207,7 +197,7 @@ export type CreatePostMutation = (
 );
 
 export type DeletePostMutationVariables = Exact<{
-  id: Scalars['Float'];
+  id: Scalars['Int'];
 }>;
 
 
@@ -217,7 +207,6 @@ export type DeletePostMutation = (
 );
 
 export type LikeMutationVariables = Exact<{
-  value: Scalars['Boolean'];
   postId: Scalars['Float'];
 }>;
 
@@ -226,7 +215,11 @@ export type LikeMutation = (
   { __typename?: 'Mutation' }
   & { like?: Maybe<(
     { __typename?: 'LikeResponse' }
-    & Pick<LikeResponse, 'likeStatus' | 'likes'>
+    & Pick<LikeResponse, 'likeStatus'>
+    & { likes: Array<(
+      { __typename?: 'User' }
+      & RegularUserFragment
+    )> }
   )> }
 );
 
@@ -314,29 +307,42 @@ export type PostQueryVariables = Exact<{
 
 export type PostQuery = (
   { __typename?: 'Query' }
-  & { getPost?: Maybe<(
+  & { post?: Maybe<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likes' | 'likeStatus'>
-    & { creator: (
+    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likeStatus'>
+    & { likes?: Maybe<Array<(
+      { __typename?: 'User' }
+      & RegularUserFragment
+    )>>, creator: (
       { __typename?: 'User' }
       & Pick<User, 'username' | 'firstName' | 'lastName' | 'avatar_url'>
     ) }
   )> }
 );
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Float'];
+  cursor?: Maybe<Scalars['String']>;
+}>;
 
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { getAllPosts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likes' | 'likeStatus'>
-    & { creator: (
-      { __typename?: 'User' }
-      & Pick<User, 'username' | 'firstName' | 'lastName' | 'avatar_url'>
-    ) }
-  )> }
+  & { paginatedPosts: (
+    { __typename?: 'PaginatedPosts' }
+    & Pick<PaginatedPosts, 'hasMore'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likeStatus'>
+      & { likes?: Maybe<Array<(
+        { __typename?: 'User' }
+        & RegularUserFragment
+      )>>, creator: (
+        { __typename?: 'User' }
+        & RegularUserFragment
+      ) }
+    )> }
+  ) }
 );
 
 export type UserQueryVariables = Exact<{
@@ -346,12 +352,16 @@ export type UserQueryVariables = Exact<{
 
 export type UserQuery = (
   { __typename?: 'Query' }
-  & { getUser?: Maybe<(
+  & { user?: Maybe<(
     { __typename?: 'User' }
     & Pick<User, 'id' | 'email' | 'firstName' | 'username' | 'lastName' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'body' | 'title' | 'createdAt' | 'owner' | 'id' | 'likes' | 'likeStatus'>
+      & Pick<Post, 'body' | 'title' | 'createdAt' | 'owner' | 'id' | 'likeStatus'>
+      & { likes?: Maybe<Array<(
+        { __typename?: 'User' }
+        & RegularUserFragment
+      )>> }
     )> }
   )> }
 );
@@ -361,7 +371,7 @@ export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type UsersQuery = (
   { __typename?: 'Query' }
-  & { getUsers: Array<(
+  & { users: Array<(
     { __typename?: 'User' }
     & RegularUserFragment
   )> }
@@ -429,7 +439,9 @@ export const CreatePostDocument = gql`
     createdAt
     creatorId
     owner
-    likes
+    likes {
+      ...RegularUser
+    }
     likeStatus
     creator {
       username
@@ -438,7 +450,7 @@ export const CreatePostDocument = gql`
     }
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
 
 /**
@@ -466,7 +478,7 @@ export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutati
 export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
 export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
 export const DeletePostDocument = gql`
-    mutation deletePost($id: Float!) {
+    mutation deletePost($id: Int!) {
   deletePost(id: $id)
 }
     `;
@@ -496,13 +508,15 @@ export type DeletePostMutationHookResult = ReturnType<typeof useDeletePostMutati
 export type DeletePostMutationResult = Apollo.MutationResult<DeletePostMutation>;
 export type DeletePostMutationOptions = Apollo.BaseMutationOptions<DeletePostMutation, DeletePostMutationVariables>;
 export const LikeDocument = gql`
-    mutation like($value: Boolean!, $postId: Float!) {
-  like(value: $value, postId: $postId) {
+    mutation like($postId: Float!) {
+  like(postId: $postId) {
     likeStatus
-    likes
+    likes {
+      ...RegularUser
+    }
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 export type LikeMutationFn = Apollo.MutationFunction<LikeMutation, LikeMutationVariables>;
 
 /**
@@ -518,7 +532,6 @@ export type LikeMutationFn = Apollo.MutationFunction<LikeMutation, LikeMutationV
  * @example
  * const [likeMutation, { data, loading, error }] = useLikeMutation({
  *   variables: {
- *      value: // value for 'value'
  *      postId: // value for 'postId'
  *   },
  * });
@@ -768,14 +781,16 @@ export type HelloLazyQueryHookResult = ReturnType<typeof useHelloLazyQuery>;
 export type HelloQueryResult = Apollo.QueryResult<HelloQuery, HelloQueryVariables>;
 export const PostDocument = gql`
     query Post($id: Float!) {
-  getPost(id: $id) {
+  post(id: $id) {
     id
     body
     title
     createdAt
     creatorId
     owner
-    likes
+    likes {
+      ...RegularUser
+    }
     likeStatus
     creator {
       username
@@ -785,7 +800,7 @@ export const PostDocument = gql`
     }
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 
 /**
  * __usePostQuery__
@@ -813,25 +828,27 @@ export type PostQueryHookResult = ReturnType<typeof usePostQuery>;
 export type PostLazyQueryHookResult = ReturnType<typeof usePostLazyQuery>;
 export type PostQueryResult = Apollo.QueryResult<PostQuery, PostQueryVariables>;
 export const PostsDocument = gql`
-    query Posts {
-  getAllPosts {
-    id
-    body
-    title
-    createdAt
-    creatorId
-    owner
-    likes
-    likeStatus
-    creator {
-      username
-      firstName
-      lastName
-      avatar_url
+    query Posts($limit: Float!, $cursor: String) {
+  paginatedPosts(limit: $limit, cursor: $cursor) {
+    posts {
+      id
+      body
+      title
+      createdAt
+      creatorId
+      owner
+      likes {
+        ...RegularUser
+      }
+      likeStatus
+      creator {
+        ...RegularUser
+      }
     }
+    hasMore
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 
 /**
  * __usePostsQuery__
@@ -845,10 +862,12 @@ export const PostsDocument = gql`
  * @example
  * const { data, loading, error } = usePostsQuery({
  *   variables: {
+ *      limit: // value for 'limit'
+ *      cursor: // value for 'cursor'
  *   },
  * });
  */
-export function usePostsQuery(baseOptions?: Apollo.QueryHookOptions<PostsQuery, PostsQueryVariables>) {
+export function usePostsQuery(baseOptions: Apollo.QueryHookOptions<PostsQuery, PostsQueryVariables>) {
         return Apollo.useQuery<PostsQuery, PostsQueryVariables>(PostsDocument, baseOptions);
       }
 export function usePostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PostsQuery, PostsQueryVariables>) {
@@ -859,7 +878,7 @@ export type PostsLazyQueryHookResult = ReturnType<typeof usePostsLazyQuery>;
 export type PostsQueryResult = Apollo.QueryResult<PostsQuery, PostsQueryVariables>;
 export const UserDocument = gql`
     query User($username: String!) {
-  getUser(username: $username) {
+  user(username: $username) {
     id
     email
     firstName
@@ -874,12 +893,14 @@ export const UserDocument = gql`
       createdAt
       owner
       id
-      likes
+      likes {
+        ...RegularUser
+      }
       likeStatus
     }
   }
 }
-    `;
+    ${RegularUserFragmentDoc}`;
 
 /**
  * __useUserQuery__
@@ -908,7 +929,7 @@ export type UserLazyQueryHookResult = ReturnType<typeof useUserLazyQuery>;
 export type UserQueryResult = Apollo.QueryResult<UserQuery, UserQueryVariables>;
 export const UsersDocument = gql`
     query Users {
-  getUsers {
+  users {
     ...RegularUser
   }
 }

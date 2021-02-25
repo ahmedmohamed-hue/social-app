@@ -6,7 +6,9 @@ mutation createPost($title: String!, $body: String!) {
     createdAt
     creatorId
     owner
-    likes
+    likes {
+      ...RegularUser
+    }
     likeStatus
     creator {
       username

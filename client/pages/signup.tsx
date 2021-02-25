@@ -74,8 +74,7 @@ const Signup: React.FC = () => {
           })
         },
       })
-        .then((res) => {
-          console.log(res)
+        .then(() => {
           router.push('/')
         })
         .catch((e) => {

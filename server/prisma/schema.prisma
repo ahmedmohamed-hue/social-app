@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider = "typegraphql-prisma"
+  output   = "../prisma/generated/type-graphql"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model like {
+  userId String  @db.Uuid
+  postId Int
+  value  Boolean
+  post   post    @relation(fields: [postId], references: [id])
+  user   user    @relation(fields: [userId], references: [id])
+
+  @@id([userId, postId])
+}
+
+model post {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar
+  body      String   @db.VarChar
+  creatorId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updateAt  DateTime @default(now()) @db.Timestamp(6)
+  user      user     @relation(fields: [creatorId], references: [id])
+  like      like[]
+}
+
+model user {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email        String   @unique
+  username     String   @unique
+  firstName    String
+  lastName     String
+  password     String
+  role         String   @default("USER")
+  onlineStatus Boolean  @default(true)
+  isVisible    Boolean  @default(false)
+  lastSeen     DateTime @default(now()) @db.Timestamp(6)
+  avatar_url   String?  @db.VarChar
+  like         like[]
+  post         post[]
+}

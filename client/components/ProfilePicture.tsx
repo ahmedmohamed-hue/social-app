@@ -7,15 +7,15 @@ import MenuItem from '@material-ui/core/MenuItem'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import { Pencil } from 'heroicons-react'
 import React, { Fragment, useState } from 'react'
-import DeleteConfirmModal from '../../components/Modals/DeleteConfirmModal'
-import ProfileAvtarModal from '../../components/Modals/ProfileAvatarModal'
-import useMenu from '../../components/useMenu'
-import useModal from '../../components/useModal'
+import DeleteConfirmModal from './Modals/DeleteConfirmModal'
+import ProfileAvtarModal from './Modals/ProfileAvatarModal'
+import useMenu from '../lib/hooks/useMenu'
+import useModal from '../lib/hooks/useModal'
 import {
   CurrentUserFragment,
   RegularUserFragment,
   useRemoveAvatarMutation,
-} from '../../generated/graphql'
+} from '../generated/graphql'
 
 const useStyles = makeStyles((theme) => ({
   avatarBox: {
@@ -94,7 +94,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({ currentUser, user }) =>
   return (
     <Box className={classes.avatarBox}>
       <Box position="relative">
-        {currentUser.id === user.id ? (
+        {currentUser?.id === user.id ? (
           <Fragment>
             <IconButton onClick={handleClick} className={classes.badge}>
               <Avatar>

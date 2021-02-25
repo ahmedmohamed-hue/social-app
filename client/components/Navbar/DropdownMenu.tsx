@@ -81,6 +81,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ user }) => {
         fragment: gql`
           fragment __ on User {
             onlineStatus
+            lastSeen
           }
         `,
         data: {

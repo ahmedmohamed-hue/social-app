@@ -1,10 +1,11 @@
 import { createWithApollo } from './withApollo'
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client'
+import { ApolloClient, ApolloLink, InMemoryCache, split } from '@apollo/client'
 import { NextPageContext } from 'next'
 import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { createUploadLink } from 'apollo-upload-client'
 import { onError } from '@apollo/client/link/error'
+import { PaginatedPosts } from '../generated/graphql'
 
 const wsLink = process.browser
   ? new WebSocketLink({
@@ -48,7 +49,26 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
 const createClient = (ctx: NextPageContext) =>
   new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            paginatedPosts: {
+              keyArgs: [],
+              merge(
+                existing: PaginatedPosts | undefined,
+                incoming: PaginatedPosts
+              ): PaginatedPosts {
+                return {
+                  ...incoming,
+                  posts: [...(existing?.posts || []), ...incoming.posts],
+                }
+              },
+            },
+          },
+        },
+      },
+    }),
     link: ApolloLink.from([errorLink, splitLink(ctx)]),
   })
 

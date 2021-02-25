@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCurrentUserQuery, usePostsQuery } from '../generated/graphql'
+import { useCurrentUserQuery } from '../generated/graphql'
 import { withApollo } from '../lib/apolloClient'
 import Layout from '../components/Layout'
 import {
@@ -13,14 +13,12 @@ import {
   useMediaQuery,
   useTheme,
 } from '@material-ui/core'
-import Post from '../components/Post'
-import { Post as PostType } from '../generated/graphql'
 import clsx from 'clsx'
-import PostSkeleton from '../components/Skeletons/PostSkeleton'
-import useModal from '../components/useModal'
+import useModal from '../lib/hooks/useModal'
 import CreatePostModal from '../components/Modals/CreatePostModal'
 import { useRouter } from 'next/router'
-import People from './components/People'
+import People from '../components/People'
+import Posts from '../components/Posts'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -53,7 +51,6 @@ const Index: React.FC = () => {
   const router = useRouter()
 
   const { data } = useCurrentUserQuery()
-  const posts = usePostsQuery()
 
   const classes = useStyles()
   const theme = useTheme()
@@ -93,17 +90,7 @@ const Index: React.FC = () => {
                   Create Post
                 </Button>
               </Box>
-              {posts.loading ? (
-                <Box>
-                  <PostSkeleton />
-                </Box>
-              ) : posts.data?.getAllPosts ? (
-                posts.data?.getAllPosts.map((p) => (
-                  <Box key={p.id}>
-                    <Post isUser={!!data?.currentUser} post={p as PostType} />
-                  </Box>
-                ))
-              ) : null}
+              <Posts isUser={!!data?.currentUser} />
             </Box>
           </Grid>
           <Grid item md={4} lg={3}>

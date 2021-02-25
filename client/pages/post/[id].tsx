@@ -22,7 +22,7 @@ const Post: React.FC = () => {
     router.push('/')
   }
 
-  if (!data?.getPost) {
+  if (!data?.post) {
     return <h1>Not found</h1>
   }
 
@@ -30,7 +30,7 @@ const Post: React.FC = () => {
     <Layout>
       <Container maxWidth="md">
         <Box display="flex" width="100%" justifyContent="center" pt={3}>
-          <PostComponent isUser={!!currentUser.data?.currentUser} post={data.getPost as PostType} />
+          <PostComponent isUser={!!currentUser.data?.currentUser} post={data.post as PostType} />
         </Box>
       </Container>
     </Layout>

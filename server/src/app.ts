@@ -1,39 +1,29 @@
 import 'reflect-metadata'
-import express, { Request, Response } from 'express'
-import { buildSchema } from 'type-graphql'
-import { HelloResolver } from './resolvers/HelloResolver'
 import { ApolloServer } from 'apollo-server-express'
-import cors from 'cors'
-import { createConnection } from 'typeorm'
-import UserResovler from './resolvers/UserResolver'
-import session from 'express-session'
-import redis from 'redis'
 import connectRedis from 'connect-redis'
-import { authChecker } from './utils/authChecker'
-import PostResolver from './resolvers/posts'
-import http from 'http'
-import { Context } from './utils/types'
-import User from './entities/User'
-import cookie from 'cookie'
-import { userLoader } from './utils/userLoader'
+import cors from 'cors'
+import express, { Request, Response } from 'express'
+import session from 'express-session'
 import { graphqlUploadExpress } from 'graphql-upload'
+import http from 'http'
 import path from 'path'
-import { createLikeLoader } from './utils/likeLoader'
+import redis from 'redis'
+import { buildSchema } from 'type-graphql'
+import { HelloResolver } from './resolvers/hello.resolver'
+import PostResolver from './resolvers/post.resolver'
+import UserResovler from './resolvers/user.resolver'
+import { authChecker } from './utils/authChecker'
+import { PrismaClient } from '@prisma/client'
 
 const main = async () => {
-  try {
-    await createConnection()
-  } catch (e) {
-    console.log('Something went wrong whille connecting to the database\n')
-    console.error(e)
-  }
-
   const app = express()
+
+  const prisma = new PrismaClient()
 
   const redisClient = redis.createClient()
   const redisStore = connectRedis(session)
 
-  app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
+  app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001'], credentials: true }))
 
   const mySession = session({
     name: 'eid',
@@ -62,10 +52,8 @@ const main = async () => {
     context: ({ req, res }) => ({
       req,
       res,
-      userLoader: userLoader(),
-      likeLoader: createLikeLoader(),
+      prisma,
     }),
-    // playground: true,
     subscriptions: {
       path: '/subscriptions',
       // @ts-ignore
@@ -73,11 +61,10 @@ const main = async () => {
         mySession(request, {} as Response, () => {
           const userId = request.session.userId
 
-          User.findOne({ where: { id: userId } }).then(async (user) => {
+          prisma.user.findUnique({ where: { id: userId } }).then(async (user) => {
             if (user) {
               if (!user.isVisible) {
-                user.onlineStatus = true
-                await user.save()
+                await prisma.user.update({ where: { id: user.id }, data: { onlineStatus: true } })
               }
             }
           })
@@ -88,12 +75,13 @@ const main = async () => {
         mySession(request, {} as Response, () => {
           const userId = request.session.userId
           if (userId) {
-            User.findOne({ where: { id: userId } }).then(async (user) => {
+            prisma.user.findUnique({ where: { id: userId } }).then(async (user) => {
               if (user) {
                 if (!user.isVisible) {
-                  user.onlineStatus = false
-                  user.lastSeen = new Date()
-                  await user.save()
+                  await prisma.user.update({
+                    where: { id: user.id },
+                    data: { onlineStatus: false, lastSeen: new Date() },
+                  })
                 }
               }
             })
@@ -112,7 +100,7 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: ['http://localhost:3000', 'http://localhost:3001'],
     })
   )
   httpServer.listen(4000, () => console.log('http://localhost:4000/graphql'))

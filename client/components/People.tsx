@@ -1,6 +1,6 @@
 import User from './User'
 import React, { Fragment } from 'react'
-import { useUsersQuery } from '../../generated/graphql'
+import { useUsersQuery } from '../generated/graphql'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const People: React.FC = () => {
-  const { data, loading } = useUsersQuery({ pollInterval: 15000 })
+  const { data } = useUsersQuery({ pollInterval: 15000 })
   const classes = useStyles()
 
   return (
@@ -34,7 +34,7 @@ const People: React.FC = () => {
       </Box>
       {/* TODO: Add Skeleton while laoding */}
       <Paper className={classes.paper}>
-        {data?.getUsers ? data.getUsers.map((user) => <User key={user.id} user={user} />) : null}
+        {data?.users ? data.users.map((user) => <User key={user.id} user={user} />) : null}
       </Paper>
     </Fragment>
   )

@@ -1,5 +1,5 @@
 query User($username: String!) {
-  getUser(username: $username) {
+  user(username: $username) {
     id
     email
     firstName
@@ -14,7 +14,9 @@ query User($username: String!) {
       createdAt
       owner
       id
-      likes
+      likes {
+        ...RegularUser
+      }
       likeStatus
     }
   }

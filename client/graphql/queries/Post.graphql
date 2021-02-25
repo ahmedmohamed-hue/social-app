@@ -1,12 +1,14 @@
 query Post($id: Float!) {
-  getPost(id: $id) {
+  post(id: $id) {
     id
     body
     title
     createdAt
     creatorId
     owner
-    likes
+    likes {
+      ...RegularUser
+    }
     likeStatus
     creator {
       username

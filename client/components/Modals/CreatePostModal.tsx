@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import { Box, IconButton, makeStyles } from '@material-ui/core'
 import { X } from 'heroicons-react'
 import { useFormik } from 'formik'
-import { PostsDocument, PostsQuery, useCreatePostMutation } from '../../generated/graphql'
+import { useCreatePostMutation } from '../../generated/graphql'
 
 interface CreatePostModalProps {
   open: boolean
@@ -39,17 +39,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     onSubmit: (values) => {
       create({
         variables: values,
-        update: (cache, { data }) => {
-          if (data?.createPost) {
-            const oldPosts = cache.readQuery<PostsQuery>({ query: PostsDocument })
-
-            cache.writeQuery<PostsQuery>({
-              query: PostsDocument,
-              data: {
-                getAllPosts: [data?.createPost!, ...oldPosts?.getAllPosts!],
-              },
-            })
-          }
+        update: (cache) => {
+          cache.evict({ fieldName: 'paginatedPosts:{}' })
         },
       }).then(() => {
         reset()

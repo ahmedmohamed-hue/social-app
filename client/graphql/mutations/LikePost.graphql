@@ -1,6 +1,8 @@
-mutation like($value: Boolean!, $postId: Float!) {
-  like(value: $value, postId: $postId) {
+mutation like($postId: Float!) {
+  like(postId: $postId) {
     likeStatus
-    likes
+    likes {
+      ...RegularUser
+    }
   }
 }

@@ -1,15 +1,15 @@
 import { useRouter } from 'next/router'
 import React from 'react'
-import Layout from '../../components/Layout'
+import Layout from '../components/Layout'
 import {
   User as UserType,
   Post as PostType,
   useCurrentUserQuery,
   useUserQuery,
-} from '../../generated/graphql'
-import { withApollo } from '../../lib/apolloClient'
+} from '../generated/graphql'
+import { withApollo } from '../lib/apolloClient'
 import DefaultErrorPage from 'next/error'
-import Post from '../../components/Post'
+import Post from '../components/Post'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Container from '@material-ui/core/Container'
 import Box from '@material-ui/core/Box'
@@ -19,7 +19,7 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import ProfilePicture from './ProfilePicture'
+import ProfilePicture from '../components/ProfilePicture'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,18 +75,18 @@ const User: React.FC = () => {
 
   const { userId } = router.query
 
-  const { data, loading, refetch } = useUserQuery({
+  const { data, loading } = useUserQuery({
     variables: { username: userId as string },
     fetchPolicy: 'network-only',
   })
 
-  if (!data?.getUser && !loading) {
+  if (!data?.user && !loading) {
     return <DefaultErrorPage statusCode={404} />
   }
 
-  if (!data?.getUser) return null
+  if (!data?.user) return null
 
-  const user = data.getUser
+  const user = data.user
 
   if (loading) {
     return (
@@ -132,7 +132,6 @@ const User: React.FC = () => {
                   key={p.id!}
                   post={{ ...(p as PostType), creator: user as UserType }}
                   isUser={!!currentUser.data?.currentUser}
-                  refetch={refetch}
                 />
               ))
             ) : (
