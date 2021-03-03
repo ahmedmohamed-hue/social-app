@@ -7,4 +7,5 @@ fragment CurrentUser on User {
   onlineStatus
   lastSeen
   avatar_url
+  cover_url
 }

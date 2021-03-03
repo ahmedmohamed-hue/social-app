@@ -12,6 +12,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Comment {
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  comment   String
+  userId    String   @db.Uuid
+  postId    Int
+  id        Int      @id @default(autoincrement())
+  post      post     @relation(fields: [postId], references: [id])
+  user      user     @relation(fields: [userId], references: [id])
+}
+
 model like {
   userId String  @db.Uuid
   postId Int
@@ -23,28 +33,32 @@ model like {
 }
 
 model post {
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar
-  body      String   @db.VarChar
-  creatorId String   @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  updateAt  DateTime @default(now()) @db.Timestamp(6)
-  user      user     @relation(fields: [creatorId], references: [id])
+  id        Int       @id @default(autoincrement())
+  title     String    @db.VarChar
+  body      String    @db.VarChar
+  creatorId String    @db.Uuid
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updateAt  DateTime  @default(now()) @db.Timestamp(6)
+  user      user      @relation(fields: [creatorId], references: [id])
+  Comment   Comment[]
   like      like[]
 }
 
 model user {
-  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  email        String   @unique
-  username     String   @unique
-  firstName    String
-  lastName     String
-  password     String
-  role         String   @default("USER")
-  onlineStatus Boolean  @default(true)
-  isVisible    Boolean  @default(false)
-  lastSeen     DateTime @default(now()) @db.Timestamp(6)
-  avatar_url   String?  @db.VarChar
-  like         like[]
-  post         post[]
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email          String    @unique
+  username       String    @unique
+  firstName      String
+  lastName       String
+  password       String
+  role           String    @default("USER")
+  onlineStatus   Boolean   @default(true)
+  isVisible      Boolean   @default(false)
+  lastSeen       DateTime  @default(now()) @db.Timestamp(6)
+  avatar_url     String?   @db.VarChar
+  cover_url      String?   @db.VarChar
+  isEmailVerfied Boolean   @default(false)
+  Comment        Comment[]
+  like           like[]
+  post           post[]
 }

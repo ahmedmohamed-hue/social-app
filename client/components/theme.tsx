@@ -44,4 +44,13 @@ export const darkTheme = createMuiTheme({
       main: red.A400,
     },
   },
+  overrides: {
+    MuiOutlinedInput: {
+      input: {
+        '&:-webkit-autofill': {
+          WebkitBoxShadow: '0 0 0 100px #1f1f1f inset',
+        },
+      },
+    },
+  },
 })

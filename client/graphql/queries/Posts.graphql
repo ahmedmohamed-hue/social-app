@@ -7,12 +7,22 @@ query Posts($limit: Float!, $cursor: String) {
       createdAt
       creatorId
       owner
+      likeStatus
       likes {
         ...RegularUser
       }
-      likeStatus
+
       creator {
         ...RegularUser
+      }
+      comments {
+        id
+        comment
+        createdAt
+        owner
+        creator {
+          ...RegularUser
+        }
       }
     }
     hasMore

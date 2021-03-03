@@ -4,7 +4,8 @@ import { SessionData } from 'express-session'
 import { Field, ID, InputType, ObjectType } from 'type-graphql'
 import { Stream } from 'stream'
 import { PrismaClient } from '@prisma/client'
-import { Post, User } from '../prisma/generated/type-graphql'
+import { Comment, Post, User } from '../prisma/generated/type-graphql'
+import { Redis } from 'ioredis'
 
 declare module 'express-session' {
   export interface SessionData {
@@ -16,6 +17,7 @@ export type Context = {
   req: Request & { session: SessionData }
   res: Response
   prisma: PrismaClient
+  redis: Redis
 }
 
 export type Upload = {
@@ -51,6 +53,15 @@ export class registerInput {
 export class PaginatedPosts {
   @Field(() => [Post])
   posts: [Post]
+
+  @Field()
+  hasMore: boolean
+}
+
+@ObjectType()
+export class PaginatedComments {
+  @Field(() => [Comment])
+  comments: [Comment]
 
   @Field()
   hasMore: boolean

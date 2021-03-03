@@ -1,0 +1,3 @@
+mutation addCover($file: Upload!) {
+  addCover(file: $file)
+}

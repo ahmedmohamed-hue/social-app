@@ -5,7 +5,7 @@ import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { createUploadLink } from 'apollo-upload-client'
 import { onError } from '@apollo/client/link/error'
-import { PaginatedPosts } from '../generated/graphql'
+import { PaginatedComments, PaginatedPosts } from '../generated/graphql'
 
 const wsLink = process.browser
   ? new WebSocketLink({
@@ -62,6 +62,18 @@ const createClient = (ctx: NextPageContext) =>
                 return {
                   ...incoming,
                   posts: [...(existing?.posts || []), ...incoming.posts],
+                }
+              },
+            },
+            paginatedComments: {
+              keyArgs: ['postId'],
+              merge(
+                existing: PaginatedComments | undefined,
+                incoming: PaginatedComments
+              ): PaginatedComments {
+                return {
+                  ...incoming,
+                  comments: [...(existing?.comments || []), ...incoming.comments],
                 }
               },
             },

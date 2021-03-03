@@ -39,7 +39,7 @@ const User: React.FC<UserProps> = ({ user }) => {
   const fromNowDate = dayjs(user.lastSeen!).fromNow()
 
   return (
-    <Link href={`/${user.username}`}>
+    <Link href={`/${user.username}`} naked>
       <Box display="flex" alignItems="center" width="100%" mx={2} p={1} pt={2}>
         <Avatar src={user.avatar_url!} className={classes.avatar} />
         <Box display="flex" justifyContent="center" flexDirection="column">

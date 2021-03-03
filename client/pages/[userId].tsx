@@ -13,13 +13,13 @@ import Post from '../components/Post'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Container from '@material-ui/core/Container'
 import Box from '@material-ui/core/Box'
-import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ProfilePicture from '../components/ProfilePicture'
+import ProfileCover from '../components/ProfileCover'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,17 +29,15 @@ const useStyles = makeStyles((theme) => ({
     background: 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.6))',
     // borderRadius: theme.spacing(2),
   },
-  avatar: {
-    width: '100%',
-    height: theme.spacing(16),
-    border: `solid 3px ${theme.palette.primary.main}`,
-  },
   cover: {
     backgroundRepeat: 'no-repeat',
     backgroundColor:
-      theme.palette.type === 'light' ? theme.palette.grey[300] : theme.palette.background.paper,
-    backgroundSize: 'cover',
-    // borderRadius: theme.spacing(1),
+      theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.background.paper,
+    backgroundSize: 'contain',
+    backgroundPosition: 'center',
+    height: '21vw',
+    display: 'flex',
+    alignItems: 'flex-end',
   },
   friendsPaper: {
     width: '100%',
@@ -48,30 +46,25 @@ const useStyles = makeStyles((theme) => ({
   gridContainer: {
     marginTop: theme.spacing(2),
   },
-  avatarBox: {
+  loading: {
     position: 'absolute',
-    bottom: -theme.spacing(6),
-    left: '50%',
-    transform: 'translate(-50%, 0)',
-    width: theme.spacing(16),
-    height: theme.spacing(16),
-    borderRadius: '50%',
-  },
-  badge: {
-    position: 'absolute',
-    bottom: theme.spacing(-1),
-    right: theme.spacing(-1),
-    zIndex: 10000,
-    '&:hover': {
-      backgroundColor: 'inherit',
-    },
+    display: 'flex',
+    height: '100%',
+    top: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+    width: '100%',
+    backgroundColor: `rgba(0,0,0,${theme.palette.type === 'dark' ? '0.6' : '0.3'})`,
   },
 }))
 
 const User: React.FC = () => {
   const router = useRouter()
   const classes = useStyles()
-  const currentUser = useCurrentUserQuery()
+
+  const { data: currentUser } = useCurrentUserQuery()
 
   const { userId } = router.query
 
@@ -99,20 +92,15 @@ const User: React.FC = () => {
   return (
     <Layout>
       <Container>
-        <Box position="relative" pt="21%" width="100%%" marginX="auto" className={classes.cover}>
-          <ProfilePicture currentUser={currentUser.data?.currentUser!} user={user} />
-          <Box
-            width="100%"
-            height="50px"
-            className={classes.gradient}
-            display="flex"
-            justifyContent="flex-end"
-            px={4}
-          >
-            <Box>
-              <Button variant="contained">Change photo cover</Button>
-            </Box>
-          </Box>
+        <Box
+          position="relative"
+          height="21vw"
+          width="100%%"
+          marginX="auto"
+          className={classes.cover}
+        >
+          <ProfileCover user={user} />
+          <ProfilePicture currentUser={currentUser?.currentUser!} user={user} />
         </Box>
         <Box textAlign="center" mt={7}>
           <Typography variant="h5" color="textPrimary">
@@ -131,7 +119,7 @@ const User: React.FC = () => {
                 <Post
                   key={p.id!}
                   post={{ ...(p as PostType), creator: user as UserType }}
-                  isUser={!!currentUser.data?.currentUser}
+                  isUser={!!currentUser?.currentUser}
                 />
               ))
             ) : (

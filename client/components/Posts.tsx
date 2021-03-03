@@ -4,10 +4,21 @@ import { usePostsQuery, Post as PostType } from '../generated/graphql'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import Post from './Post'
 import PostSkeleton from './Skeletons/PostSkeleton'
+import { Paper, Typography } from '@material-ui/core'
 
 interface Props {
   isUser?: boolean
 }
+
+const EndComponent = () => (
+  <Paper>
+    <Box width="100%" p={1} textAlign="center">
+      <Typography variant="subtitle2" color="textSecondary">
+        No more posts
+      </Typography>
+    </Box>
+  </Paper>
+)
 
 const Posts: React.FC<Props> = ({ isUser }) => {
   const { data, loading, fetchMore, variables } = usePostsQuery({ variables: { limit: 3 } })
@@ -33,6 +44,7 @@ const Posts: React.FC<Props> = ({ isUser }) => {
               <PostSkeleton />
             </Box>
           }
+          endMessage={<EndComponent />}
           dataLength={data.paginatedPosts.posts.length}
           hasMore={data.paginatedPosts.hasMore}
         >

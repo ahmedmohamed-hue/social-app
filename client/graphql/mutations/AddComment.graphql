@@ -1,0 +1,11 @@
+mutation addComment($postId: Int!, $comment: String!) {
+  addComment(postId: $postId, commnet: $comment) {
+    id
+    comment
+    createdAt
+    owner
+    creator {
+      ...RegularUser
+    }
+  }
+}

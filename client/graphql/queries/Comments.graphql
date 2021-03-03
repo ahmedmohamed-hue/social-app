@@ -1,0 +1,14 @@
+query Comments($limit: Float!, $cursor: String, $postId: Int!) {
+  paginatedComments(limit: $limit, cursor: $cursor, postId: $postId) {
+    comments {
+      comment
+      createdAt
+      id
+      owner
+      creator {
+        ...RegularUser
+      }
+    }
+    hasMore
+  }
+}

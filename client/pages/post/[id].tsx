@@ -29,7 +29,7 @@ const Post: React.FC = () => {
   return (
     <Layout>
       <Container maxWidth="md">
-        <Box display="flex" width="100%" justifyContent="center" pt={3}>
+        <Box display="flex" maxWidth="700px" marginX="auto" justifyContent="center" pt={3}>
           <PostComponent isUser={!!currentUser.data?.currentUser} post={data.post as PostType} />
         </Box>
       </Container>

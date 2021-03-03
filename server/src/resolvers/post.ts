@@ -9,7 +9,7 @@ import {
   Resolver,
   Root,
 } from 'type-graphql'
-import { Post, User } from '../../prisma/generated/type-graphql'
+import { Comment, Post, User } from '../../prisma/generated/type-graphql'
 import { Context, postInput, PaginatedPosts, LikeResponse } from '../types'
 
 @Resolver(Post)
@@ -42,6 +42,11 @@ export default class PostResolver {
     const users = likes.map((l) => l.user)
 
     return users
+  }
+
+  @FieldResolver(() => [Comment], { nullable: true })
+  comments(@Root() post: Post, @Ctx() { prisma }: Context) {
+    return prisma.comment.findMany({ where: { postId: post.id } })
   }
 
   @FieldResolver(() => Boolean)
@@ -79,7 +84,6 @@ export default class PostResolver {
     const validCursor =
       dateCursor.toString() !== 'Invalid Date' ? dateCursor.toISOString() : undefined
 
-    console.log(validCursor)
     const posts = await prisma.post.findMany({
       take: limitPlusOne,
       where: {
@@ -95,6 +99,7 @@ export default class PostResolver {
   @Mutation(() => Boolean)
   async deletePost(@Arg('id', () => Int) id: number, @Ctx() { req, prisma }: Context) {
     try {
+      await prisma.comment.deleteMany({ where: { postId: id } })
       await prisma.like.deleteMany({ where: { postId: id } })
       await prisma.post.deleteMany({ where: { creatorId: req.session.userId, id } })
     } catch (e) {

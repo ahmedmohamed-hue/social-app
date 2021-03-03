@@ -16,6 +16,11 @@ import {
   Root,
 } from 'type-graphql'
 import { Post, User } from '../../prisma/generated/type-graphql'
+import { deleteObject, uploadFile } from '../utils/aws'
+import { v4 } from 'uuid'
+import { sendEmail } from '../utils/mailer'
+
+const FORGOT_PASSWORD_PREFIX = 'forgot-password'
 
 @ObjectType()
 class ToggleOnline {
@@ -41,95 +46,6 @@ export default class UserResovler {
     return prisma.user.findUnique({ where: { id: user.id } }).post()
   }
 
-  @Mutation(() => User)
-  async register(@Arg('options') options: registerInput, @Ctx() { req, prisma }: Context) {
-    const hashedPassword = await hash(options.password)
-
-    let result
-    try {
-      result = await prisma.user.create({ data: { ...options, password: hashedPassword } })
-    } catch (e) {
-      if (e.code == '23505') {
-        throw new Error('Username or email already exists')
-      }
-      console.log(e.code)
-      throw new Error('sm weent wrong')
-    }
-
-    req.session.userId = result.id
-
-    return result
-  }
-
-  @Mutation(() => User, { nullable: true })
-  async login(
-    @Arg('usernameOrEmail') usernameOrPassword: string,
-    @Arg('password') password: string,
-    @Ctx() { req, prisma }: Context
-  ) {
-    const where = usernameOrPassword.includes('@')
-      ? { where: { email: usernameOrPassword } }
-      : { where: { username: usernameOrPassword } }
-
-    //@ts-ignore
-    const user = await prisma.user.findUnique(where)
-
-    if (!user) {
-      throw new Error('No user exists')
-    }
-
-    const verfied = await verify(user.password, password)
-
-    if (!verfied) {
-      return new Error('Wrong password')
-    }
-
-    req.session.userId = user.id
-    if (!user.isVisible) {
-      user.onlineStatus = true
-    }
-
-    return user
-  }
-
-  @Query(() => User, { nullable: true })
-  currentUser(@Ctx() { req, prisma }: Context) {
-    if (!req.session.userId) {
-      return null
-    }
-
-    return prisma.user.findUnique({ where: { id: req.session.userId } })
-  }
-
-  @Mutation(() => Boolean, {})
-  async logout(@Ctx() { req, res, prisma }: Context) {
-    const { userId } = req.session
-
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    return new Promise((resolve) =>
-      req.session.destroy(async (e) => {
-        res.clearCookie('eid')
-        if (e) {
-          console.log(e)
-          resolve(false)
-          return
-        }
-
-        if (user) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              lastSeen: new Date(),
-              onlineStatus: false,
-            },
-          })
-        }
-
-        resolve(true)
-      })
-    )
-  }
-
   @Query(() => User, { nullable: true })
   async user(@Arg('username') username: string, @Ctx() { prisma }: Context) {
     const user = await prisma.user.findUnique({
@@ -141,7 +57,7 @@ export default class UserResovler {
       return null
     }
 
-    // TODO: Fix types post -> posts
+    // FIXME: Fix types post -> posts
     return { ...user, posts: [...user.post] }
   }
 
@@ -192,29 +108,74 @@ export default class UserResovler {
   ) {
     const { userId } = req.session
     const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (user && user.avatar_url) {
+      const fileName = user.avatar_url.split('/')[user.avatar_url.split('/').length - 1]
+      console.log('HAS IMAGE')
+      try {
+        await deleteObject(fileName)
+      } catch (e) {
+        console.log('e')
+      }
+    }
     const fileName = `${user ? user.username : ''}-${Date.now()}.${extension(file.mimetype)}`
+    const location = await uploadFile(file, fileName)
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        avatar_url: location,
+      },
+    })
 
-    return new Promise(async (resolve, reject) =>
-      file
-        .createReadStream()
-        .pipe(createWriteStream(__dirname + `../../public/avatars/${fileName}`))
-        .on('finish', async () => {
-          if (user) {
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                avatar_url: `http://localhost:4000/static/avatars/${fileName}`,
-              },
-            })
+    return location
+  }
 
-            resolve(user.avatar_url)
-          }
-        })
-        .on('error', (e) => {
-          console.log(e)
-          return reject(false)
-        })
-    )
+  @Authorized()
+  @Mutation(() => String)
+  async addCover(
+    @Arg('file', () => GraphQLUpload) file: FileUpload,
+    @Ctx() { req, prisma }: Context
+  ) {
+    const { userId } = req.session
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (user && user.cover_url) {
+      const fileName = user.cover_url.split('/')[user.cover_url.split('/').length - 1]
+      try {
+        await deleteObject(fileName)
+      } catch (e) {
+        console.log('e')
+      }
+    }
+
+    const fileName = `${user ? user.username : ''}-${Date.now()}.${extension(file.mimetype)}`
+    const location = await uploadFile(file, fileName)
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        cover_url: location,
+      },
+    })
+
+    return location
+  }
+
+  @Authorized()
+  @Mutation(() => Boolean)
+  async removeCover(@Ctx() { req, prisma }: Context) {
+    const { userId } = req.session
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+
+    if (user && user.cover_url) {
+      const fileName = user.cover_url.split('/')[user.cover_url.split('/').length - 1]
+      try {
+        await deleteObject(fileName)
+        await prisma.user.update({ where: { id: userId }, data: { cover_url: '' } })
+      } catch (e) {
+        console.log(e)
+      }
+    } else {
+      return false
+    }
+    return true
   }
 
   @Authorized()
@@ -224,11 +185,13 @@ export default class UserResovler {
     const user = await prisma.user.findUnique({ where: { id: userId } })
 
     if (user && user.avatar_url) {
-      const fileName = user.avatar_url.split('/')[5]
-      unlink(__dirname + `../../public/avatars/${fileName}`, async (e) => {
-        if (e) throw new Error('Something went wrong while removing the image')
+      const fileName = user.avatar_url.split('/')[user.avatar_url.split('/').length - 1]
+      try {
+        await deleteObject(fileName)
         await prisma.user.update({ where: { id: userId }, data: { avatar_url: '' } })
-      })
+      } catch (e) {
+        console.log(e)
+      }
     } else {
       return false
     }

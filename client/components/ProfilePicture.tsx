@@ -26,12 +26,13 @@ const useStyles = makeStyles((theme) => ({
     width: theme.spacing(16),
     height: theme.spacing(16),
     borderRadius: '50%',
+    zIndex: 2,
   },
   badge: {
     position: 'absolute',
     bottom: theme.spacing(-1),
     right: theme.spacing(-1),
-    zIndex: 10000,
+    zIndex: 3,
     '&:hover': {
       backgroundColor: 'inherit',
     },

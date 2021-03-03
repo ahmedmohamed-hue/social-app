@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import dotenv from 'dotenv'
 import { ApolloServer } from 'apollo-server-express'
 import connectRedis from 'connect-redis'
 import cors from 'cors'
@@ -7,27 +8,31 @@ import session from 'express-session'
 import { graphqlUploadExpress } from 'graphql-upload'
 import http from 'http'
 import path from 'path'
-import redis from 'redis'
+import Redis from 'ioredis'
 import { buildSchema } from 'type-graphql'
-import { HelloResolver } from './resolvers/hello.resolver'
-import PostResolver from './resolvers/post.resolver'
-import UserResovler from './resolvers/user.resolver'
+import { HelloResolver } from './resolvers/hello'
+import PostResolver from './resolvers/post'
+import UserResovler from './resolvers/user'
 import { authChecker } from './utils/authChecker'
 import { PrismaClient } from '@prisma/client'
+import CommentResolver from './resolvers/comment'
+import AuthResolver from './resolvers/auth'
+
+dotenv.config()
 
 const main = async () => {
   const app = express()
 
   const prisma = new PrismaClient()
 
-  const redisClient = redis.createClient()
+  const redis = new Redis()
   const redisStore = connectRedis(session)
 
   app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001'], credentials: true }))
 
   const mySession = session({
     name: 'eid',
-    store: new redisStore({ client: redisClient, disableTTL: true }),
+    store: new redisStore({ client: redis, disableTTL: true }),
     secret: '2131431124',
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 365 * 5,
@@ -42,7 +47,7 @@ const main = async () => {
   app.use(graphqlUploadExpress())
 
   const schema = await buildSchema({
-    resolvers: [HelloResolver, UserResovler, PostResolver],
+    resolvers: [UserResovler, AuthResolver, PostResolver, CommentResolver],
     authChecker,
   })
 
@@ -53,6 +58,7 @@ const main = async () => {
       req,
       res,
       prisma,
+      redis,
     }),
     subscriptions: {
       path: '/subscriptions',

@@ -51,7 +51,7 @@ const ProfileAvtarModal: React.FC<DeleteModalProps> = ({
 
   const getCropData = () => {
     if (typeof cropper !== 'undefined') {
-      cropper.getCroppedCanvas().toBlob(async (blob: any) => {
+      cropper.getCroppedCanvas().toBlob(async (blob: Blob) => {
         const file = new File([blob], 'dada', {
           type: 'image/png',
         })
@@ -85,6 +85,7 @@ const ProfileAvtarModal: React.FC<DeleteModalProps> = ({
           <Cropper
             style={{ height: 400, overflow: 'hidden' }}
             initialAspectRatio={1}
+            autoCrop
             src={file ? file : img}
             viewMode={3}
             minCropBoxHeight={10}

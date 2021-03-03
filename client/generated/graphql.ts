@@ -19,14 +19,15 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  helloWorld: Scalars['String'];
-  secert: Response;
   postByUser: Array<Post>;
   post?: Maybe<Post>;
   paginatedPosts: PaginatedPosts;
-  currentUser?: Maybe<User>;
   user?: Maybe<User>;
   users: Array<User>;
+  comments: Array<Comment>;
+  paginatedComments: PaginatedComments;
+  currentUser?: Maybe<User>;
+  isValidRestoreToken: Scalars['Boolean'];
 };
 
 
@@ -45,10 +46,21 @@ export type QueryUserArgs = {
   username: Scalars['String'];
 };
 
-export type Response = {
-  __typename?: 'Response';
-  message: Scalars['String'];
-  code: Scalars['Int'];
+
+export type QueryCommentsArgs = {
+  postId: Scalars['Int'];
+};
+
+
+export type QueryPaginatedCommentsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  postId: Scalars['Int'];
+  limit: Scalars['Float'];
+};
+
+
+export type QueryIsValidRestoreTokenArgs = {
+  token: Scalars['String'];
 };
 
 export type Post = {
@@ -62,6 +74,7 @@ export type Post = {
   creator: User;
   likeStatus?: Maybe<Scalars['Boolean']>;
   likes?: Maybe<Array<User>>;
+  comments?: Maybe<Array<Comment>>;
   owner: Scalars['Boolean'];
 };
 
@@ -73,10 +86,26 @@ export type User = {
   username: Scalars['String'];
   firstName: Scalars['String'];
   lastName: Scalars['String'];
+  password: Scalars['String'];
+  role: Scalars['String'];
   onlineStatus: Scalars['Boolean'];
+  isVisible: Scalars['Boolean'];
   lastSeen: Scalars['DateTime'];
   avatar_url?: Maybe<Scalars['String']>;
+  cover_url?: Maybe<Scalars['String']>;
+  isEmailVerfied: Scalars['Boolean'];
   posts: Array<Post>;
+};
+
+export type Comment = {
+  __typename?: 'Comment';
+  createdAt: Scalars['DateTime'];
+  comment: Scalars['String'];
+  userId: Scalars['String'];
+  postId: Scalars['Int'];
+  id: Scalars['Int'];
+  creator: User;
+  owner: Scalars['Boolean'];
 };
 
 export type PaginatedPosts = {
@@ -85,17 +114,30 @@ export type PaginatedPosts = {
   hasMore: Scalars['Boolean'];
 };
 
+export type PaginatedComments = {
+  __typename?: 'PaginatedComments';
+  comments: Array<Comment>;
+  hasMore: Scalars['Boolean'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createPost: Post;
   deletePost: Scalars['Boolean'];
   like?: Maybe<LikeResponse>;
+  toggleStatus?: Maybe<ToggleOnline>;
+  addAvatar: Scalars['String'];
+  addCover: Scalars['String'];
+  removeCover: Scalars['Boolean'];
+  removeAvatar: Scalars['Boolean'];
+  addComment: Comment;
+  removeComment: Scalars['Boolean'];
   register: User;
   login?: Maybe<User>;
   logout: Scalars['Boolean'];
-  toggleStatus?: Maybe<ToggleOnline>;
-  addAvatar: Scalars['String'];
-  removeAvatar: Scalars['Boolean'];
+  confirmEmail: User;
+  forgotPassword: Scalars['Boolean'];
+  changePassword: User;
 };
 
 
@@ -114,6 +156,27 @@ export type MutationLikeArgs = {
 };
 
 
+export type MutationAddAvatarArgs = {
+  file: Scalars['Upload'];
+};
+
+
+export type MutationAddCoverArgs = {
+  file: Scalars['Upload'];
+};
+
+
+export type MutationAddCommentArgs = {
+  postId: Scalars['Int'];
+  commnet: Scalars['String'];
+};
+
+
+export type MutationRemoveCommentArgs = {
+  commentId: Scalars['Int'];
+};
+
+
 export type MutationRegisterArgs = {
   options: RegisterInput;
 };
@@ -125,8 +188,19 @@ export type MutationLoginArgs = {
 };
 
 
-export type MutationAddAvatarArgs = {
-  file: Scalars['Upload'];
+export type MutationConfirmEmailArgs = {
+  token: Scalars['String'];
+};
+
+
+export type MutationForgotPasswordArgs = {
+  email: Scalars['String'];
+};
+
+
+export type MutationChangePasswordArgs = {
+  newPassword: Scalars['String'];
+  token: Scalars['String'];
 };
 
 export type PostInput = {
@@ -140,6 +214,13 @@ export type LikeResponse = {
   likeStatus: Scalars['Boolean'];
 };
 
+export type ToggleOnline = {
+  __typename?: 'ToggleOnline';
+  onlineStatus: Scalars['Boolean'];
+  lastSeen: Scalars['DateTime'];
+};
+
+
 export type RegisterInput = {
   email: Scalars['String'];
   username: Scalars['String'];
@@ -148,21 +229,14 @@ export type RegisterInput = {
   password: Scalars['String'];
 };
 
-export type ToggleOnline = {
-  __typename?: 'ToggleOnline';
-  onlineStatus: Scalars['Boolean'];
-  lastSeen: Scalars['DateTime'];
-};
-
-
 export type CurrentUserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
+  & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url' | 'cover_url'>
 );
 
 export type RegularUserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'id' | 'firstName' | 'lastName' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
+  & Pick<User, 'id' | 'firstName' | 'lastName' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url' | 'cover_url'>
 );
 
 export type AddAvatarMutationVariables = Exact<{
@@ -173,6 +247,34 @@ export type AddAvatarMutationVariables = Exact<{
 export type AddAvatarMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'addAvatar'>
+);
+
+export type AddCommentMutationVariables = Exact<{
+  postId: Scalars['Int'];
+  comment: Scalars['String'];
+}>;
+
+
+export type AddCommentMutation = (
+  { __typename?: 'Mutation' }
+  & { addComment: (
+    { __typename?: 'Comment' }
+    & Pick<Comment, 'id' | 'comment' | 'createdAt' | 'owner'>
+    & { creator: (
+      { __typename?: 'User' }
+      & RegularUserFragment
+    ) }
+  ) }
+);
+
+export type AddCoverMutationVariables = Exact<{
+  file: Scalars['Upload'];
+}>;
+
+
+export type AddCoverMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addCover'>
 );
 
 export type CreatePostMutationVariables = Exact<{
@@ -270,6 +372,24 @@ export type RemoveAvatarMutation = (
   & Pick<Mutation, 'removeAvatar'>
 );
 
+export type RemoveCommentMutationVariables = Exact<{
+  commentId: Scalars['Int'];
+}>;
+
+
+export type RemoveCommentMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'removeComment'>
+);
+
+export type RemoveCoverMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RemoveCoverMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'removeCover'>
+);
+
 export type ToggleStatusMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -279,6 +399,29 @@ export type ToggleStatusMutation = (
     { __typename?: 'ToggleOnline' }
     & Pick<ToggleOnline, 'onlineStatus' | 'lastSeen'>
   )> }
+);
+
+export type CommentsQueryVariables = Exact<{
+  limit: Scalars['Float'];
+  cursor?: Maybe<Scalars['String']>;
+  postId: Scalars['Int'];
+}>;
+
+
+export type CommentsQuery = (
+  { __typename?: 'Query' }
+  & { paginatedComments: (
+    { __typename?: 'PaginatedComments' }
+    & Pick<PaginatedComments, 'hasMore'>
+    & { comments: Array<(
+      { __typename?: 'Comment' }
+      & Pick<Comment, 'comment' | 'createdAt' | 'id' | 'owner'>
+      & { creator: (
+        { __typename?: 'User' }
+        & RegularUserFragment
+      ) }
+    )> }
+  ) }
 );
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
@@ -292,12 +435,14 @@ export type CurrentUserQuery = (
   )> }
 );
 
-export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
+export type IsValidRestoreTokenQueryVariables = Exact<{
+  token: Scalars['String'];
+}>;
 
 
-export type HelloQuery = (
+export type IsValidRestoreTokenQuery = (
   { __typename?: 'Query' }
-  & Pick<Query, 'helloWorld'>
+  & Pick<Query, 'isValidRestoreToken'>
 );
 
 export type PostQueryVariables = Exact<{
@@ -315,8 +460,15 @@ export type PostQuery = (
       & RegularUserFragment
     )>>, creator: (
       { __typename?: 'User' }
-      & Pick<User, 'username' | 'firstName' | 'lastName' | 'avatar_url'>
-    ) }
+      & RegularUserFragment
+    ), comments?: Maybe<Array<(
+      { __typename?: 'Comment' }
+      & Pick<Comment, 'id' | 'comment' | 'createdAt' | 'owner'>
+      & { creator: (
+        { __typename?: 'User' }
+        & RegularUserFragment
+      ) }
+    )>> }
   )> }
 );
 
@@ -340,7 +492,14 @@ export type PostsQuery = (
       )>>, creator: (
         { __typename?: 'User' }
         & RegularUserFragment
-      ) }
+      ), comments?: Maybe<Array<(
+        { __typename?: 'Comment' }
+        & Pick<Comment, 'id' | 'comment' | 'createdAt' | 'owner'>
+        & { creator: (
+          { __typename?: 'User' }
+          & RegularUserFragment
+        ) }
+      )>> }
     )> }
   ) }
 );
@@ -354,15 +513,25 @@ export type UserQuery = (
   { __typename?: 'Query' }
   & { user?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'email' | 'firstName' | 'username' | 'lastName' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'body' | 'title' | 'createdAt' | 'owner' | 'id' | 'likeStatus'>
+      & Pick<Post, 'id' | 'body' | 'title' | 'createdAt' | 'creatorId' | 'owner' | 'likeStatus'>
       & { likes?: Maybe<Array<(
         { __typename?: 'User' }
         & RegularUserFragment
+      )>>, creator: (
+        { __typename?: 'User' }
+        & RegularUserFragment
+      ), comments?: Maybe<Array<(
+        { __typename?: 'Comment' }
+        & Pick<Comment, 'comment' | 'createdAt'>
+        & { creator: (
+          { __typename?: 'User' }
+          & RegularUserFragment
+        ) }
       )>> }
     )> }
+    & RegularUserFragment
   )> }
 );
 
@@ -387,6 +556,7 @@ export const CurrentUserFragmentDoc = gql`
   onlineStatus
   lastSeen
   avatar_url
+  cover_url
 }
     `;
 export const RegularUserFragmentDoc = gql`
@@ -398,6 +568,7 @@ export const RegularUserFragmentDoc = gql`
   onlineStatus
   lastSeen
   avatar_url
+  cover_url
 }
     `;
 export const AddAvatarDocument = gql`
@@ -430,6 +601,75 @@ export function useAddAvatarMutation(baseOptions?: Apollo.MutationHookOptions<Ad
 export type AddAvatarMutationHookResult = ReturnType<typeof useAddAvatarMutation>;
 export type AddAvatarMutationResult = Apollo.MutationResult<AddAvatarMutation>;
 export type AddAvatarMutationOptions = Apollo.BaseMutationOptions<AddAvatarMutation, AddAvatarMutationVariables>;
+export const AddCommentDocument = gql`
+    mutation addComment($postId: Int!, $comment: String!) {
+  addComment(postId: $postId, commnet: $comment) {
+    id
+    comment
+    createdAt
+    owner
+    creator {
+      ...RegularUser
+    }
+  }
+}
+    ${RegularUserFragmentDoc}`;
+export type AddCommentMutationFn = Apollo.MutationFunction<AddCommentMutation, AddCommentMutationVariables>;
+
+/**
+ * __useAddCommentMutation__
+ *
+ * To run a mutation, you first call `useAddCommentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddCommentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addCommentMutation, { data, loading, error }] = useAddCommentMutation({
+ *   variables: {
+ *      postId: // value for 'postId'
+ *      comment: // value for 'comment'
+ *   },
+ * });
+ */
+export function useAddCommentMutation(baseOptions?: Apollo.MutationHookOptions<AddCommentMutation, AddCommentMutationVariables>) {
+        return Apollo.useMutation<AddCommentMutation, AddCommentMutationVariables>(AddCommentDocument, baseOptions);
+      }
+export type AddCommentMutationHookResult = ReturnType<typeof useAddCommentMutation>;
+export type AddCommentMutationResult = Apollo.MutationResult<AddCommentMutation>;
+export type AddCommentMutationOptions = Apollo.BaseMutationOptions<AddCommentMutation, AddCommentMutationVariables>;
+export const AddCoverDocument = gql`
+    mutation addCover($file: Upload!) {
+  addCover(file: $file)
+}
+    `;
+export type AddCoverMutationFn = Apollo.MutationFunction<AddCoverMutation, AddCoverMutationVariables>;
+
+/**
+ * __useAddCoverMutation__
+ *
+ * To run a mutation, you first call `useAddCoverMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddCoverMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addCoverMutation, { data, loading, error }] = useAddCoverMutation({
+ *   variables: {
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useAddCoverMutation(baseOptions?: Apollo.MutationHookOptions<AddCoverMutation, AddCoverMutationVariables>) {
+        return Apollo.useMutation<AddCoverMutation, AddCoverMutationVariables>(AddCoverDocument, baseOptions);
+      }
+export type AddCoverMutationHookResult = ReturnType<typeof useAddCoverMutation>;
+export type AddCoverMutationResult = Apollo.MutationResult<AddCoverMutation>;
+export type AddCoverMutationOptions = Apollo.BaseMutationOptions<AddCoverMutation, AddCoverMutationVariables>;
 export const CreatePostDocument = gql`
     mutation createPost($title: String!, $body: String!) {
   createPost(options: {title: $title, body: $body}) {
@@ -685,6 +925,65 @@ export function useRemoveAvatarMutation(baseOptions?: Apollo.MutationHookOptions
 export type RemoveAvatarMutationHookResult = ReturnType<typeof useRemoveAvatarMutation>;
 export type RemoveAvatarMutationResult = Apollo.MutationResult<RemoveAvatarMutation>;
 export type RemoveAvatarMutationOptions = Apollo.BaseMutationOptions<RemoveAvatarMutation, RemoveAvatarMutationVariables>;
+export const RemoveCommentDocument = gql`
+    mutation RemoveComment($commentId: Int!) {
+  removeComment(commentId: $commentId)
+}
+    `;
+export type RemoveCommentMutationFn = Apollo.MutationFunction<RemoveCommentMutation, RemoveCommentMutationVariables>;
+
+/**
+ * __useRemoveCommentMutation__
+ *
+ * To run a mutation, you first call `useRemoveCommentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveCommentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeCommentMutation, { data, loading, error }] = useRemoveCommentMutation({
+ *   variables: {
+ *      commentId: // value for 'commentId'
+ *   },
+ * });
+ */
+export function useRemoveCommentMutation(baseOptions?: Apollo.MutationHookOptions<RemoveCommentMutation, RemoveCommentMutationVariables>) {
+        return Apollo.useMutation<RemoveCommentMutation, RemoveCommentMutationVariables>(RemoveCommentDocument, baseOptions);
+      }
+export type RemoveCommentMutationHookResult = ReturnType<typeof useRemoveCommentMutation>;
+export type RemoveCommentMutationResult = Apollo.MutationResult<RemoveCommentMutation>;
+export type RemoveCommentMutationOptions = Apollo.BaseMutationOptions<RemoveCommentMutation, RemoveCommentMutationVariables>;
+export const RemoveCoverDocument = gql`
+    mutation removeCover {
+  removeCover
+}
+    `;
+export type RemoveCoverMutationFn = Apollo.MutationFunction<RemoveCoverMutation, RemoveCoverMutationVariables>;
+
+/**
+ * __useRemoveCoverMutation__
+ *
+ * To run a mutation, you first call `useRemoveCoverMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveCoverMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeCoverMutation, { data, loading, error }] = useRemoveCoverMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRemoveCoverMutation(baseOptions?: Apollo.MutationHookOptions<RemoveCoverMutation, RemoveCoverMutationVariables>) {
+        return Apollo.useMutation<RemoveCoverMutation, RemoveCoverMutationVariables>(RemoveCoverDocument, baseOptions);
+      }
+export type RemoveCoverMutationHookResult = ReturnType<typeof useRemoveCoverMutation>;
+export type RemoveCoverMutationResult = Apollo.MutationResult<RemoveCoverMutation>;
+export type RemoveCoverMutationOptions = Apollo.BaseMutationOptions<RemoveCoverMutation, RemoveCoverMutationVariables>;
 export const ToggleStatusDocument = gql`
     mutation toggleStatus {
   toggleStatus {
@@ -717,6 +1016,50 @@ export function useToggleStatusMutation(baseOptions?: Apollo.MutationHookOptions
 export type ToggleStatusMutationHookResult = ReturnType<typeof useToggleStatusMutation>;
 export type ToggleStatusMutationResult = Apollo.MutationResult<ToggleStatusMutation>;
 export type ToggleStatusMutationOptions = Apollo.BaseMutationOptions<ToggleStatusMutation, ToggleStatusMutationVariables>;
+export const CommentsDocument = gql`
+    query Comments($limit: Float!, $cursor: String, $postId: Int!) {
+  paginatedComments(limit: $limit, cursor: $cursor, postId: $postId) {
+    comments {
+      comment
+      createdAt
+      id
+      owner
+      creator {
+        ...RegularUser
+      }
+    }
+    hasMore
+  }
+}
+    ${RegularUserFragmentDoc}`;
+
+/**
+ * __useCommentsQuery__
+ *
+ * To run a query within a React component, call `useCommentsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCommentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCommentsQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      cursor: // value for 'cursor'
+ *      postId: // value for 'postId'
+ *   },
+ * });
+ */
+export function useCommentsQuery(baseOptions: Apollo.QueryHookOptions<CommentsQuery, CommentsQueryVariables>) {
+        return Apollo.useQuery<CommentsQuery, CommentsQueryVariables>(CommentsDocument, baseOptions);
+      }
+export function useCommentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CommentsQuery, CommentsQueryVariables>) {
+          return Apollo.useLazyQuery<CommentsQuery, CommentsQueryVariables>(CommentsDocument, baseOptions);
+        }
+export type CommentsQueryHookResult = ReturnType<typeof useCommentsQuery>;
+export type CommentsLazyQueryHookResult = ReturnType<typeof useCommentsLazyQuery>;
+export type CommentsQueryResult = Apollo.QueryResult<CommentsQuery, CommentsQueryVariables>;
 export const CurrentUserDocument = gql`
     query currentUser {
   currentUser {
@@ -749,36 +1092,37 @@ export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
-export const HelloDocument = gql`
-    query Hello {
-  helloWorld
+export const IsValidRestoreTokenDocument = gql`
+    query isValidRestoreToken($token: String!) {
+  isValidRestoreToken(token: $token)
 }
     `;
 
 /**
- * __useHelloQuery__
+ * __useIsValidRestoreTokenQuery__
  *
- * To run a query within a React component, call `useHelloQuery` and pass it any options that fit your needs.
- * When your component renders, `useHelloQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useIsValidRestoreTokenQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsValidRestoreTokenQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useHelloQuery({
+ * const { data, loading, error } = useIsValidRestoreTokenQuery({
  *   variables: {
+ *      token: // value for 'token'
  *   },
  * });
  */
-export function useHelloQuery(baseOptions?: Apollo.QueryHookOptions<HelloQuery, HelloQueryVariables>) {
-        return Apollo.useQuery<HelloQuery, HelloQueryVariables>(HelloDocument, baseOptions);
+export function useIsValidRestoreTokenQuery(baseOptions: Apollo.QueryHookOptions<IsValidRestoreTokenQuery, IsValidRestoreTokenQueryVariables>) {
+        return Apollo.useQuery<IsValidRestoreTokenQuery, IsValidRestoreTokenQueryVariables>(IsValidRestoreTokenDocument, baseOptions);
       }
-export function useHelloLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<HelloQuery, HelloQueryVariables>) {
-          return Apollo.useLazyQuery<HelloQuery, HelloQueryVariables>(HelloDocument, baseOptions);
+export function useIsValidRestoreTokenLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsValidRestoreTokenQuery, IsValidRestoreTokenQueryVariables>) {
+          return Apollo.useLazyQuery<IsValidRestoreTokenQuery, IsValidRestoreTokenQueryVariables>(IsValidRestoreTokenDocument, baseOptions);
         }
-export type HelloQueryHookResult = ReturnType<typeof useHelloQuery>;
-export type HelloLazyQueryHookResult = ReturnType<typeof useHelloLazyQuery>;
-export type HelloQueryResult = Apollo.QueryResult<HelloQuery, HelloQueryVariables>;
+export type IsValidRestoreTokenQueryHookResult = ReturnType<typeof useIsValidRestoreTokenQuery>;
+export type IsValidRestoreTokenLazyQueryHookResult = ReturnType<typeof useIsValidRestoreTokenLazyQuery>;
+export type IsValidRestoreTokenQueryResult = Apollo.QueryResult<IsValidRestoreTokenQuery, IsValidRestoreTokenQueryVariables>;
 export const PostDocument = gql`
     query Post($id: Float!) {
   post(id: $id) {
@@ -788,15 +1132,21 @@ export const PostDocument = gql`
     createdAt
     creatorId
     owner
+    likeStatus
     likes {
       ...RegularUser
     }
-    likeStatus
     creator {
-      username
-      firstName
-      lastName
-      avatar_url
+      ...RegularUser
+    }
+    comments {
+      id
+      comment
+      createdAt
+      owner
+      creator {
+        ...RegularUser
+      }
     }
   }
 }
@@ -837,12 +1187,21 @@ export const PostsDocument = gql`
       createdAt
       creatorId
       owner
+      likeStatus
       likes {
         ...RegularUser
       }
-      likeStatus
       creator {
         ...RegularUser
+      }
+      comments {
+        id
+        comment
+        createdAt
+        owner
+        creator {
+          ...RegularUser
+        }
       }
     }
     hasMore
@@ -879,24 +1238,28 @@ export type PostsQueryResult = Apollo.QueryResult<PostsQuery, PostsQueryVariable
 export const UserDocument = gql`
     query User($username: String!) {
   user(username: $username) {
-    id
-    email
-    firstName
-    username
-    lastName
-    onlineStatus
-    lastSeen
-    avatar_url
+    ...RegularUser
     posts {
+      id
       body
       title
       createdAt
+      creatorId
       owner
-      id
+      likeStatus
       likes {
         ...RegularUser
       }
-      likeStatus
+      creator {
+        ...RegularUser
+      }
+      comments {
+        comment
+        createdAt
+        creator {
+          ...RegularUser
+        }
+      }
     }
   }
 }

@@ -14,19 +14,7 @@ import { useFormik } from 'formik'
 import { useRouter } from 'next/router'
 import { CurrentUserQuery, CurrentUserDocument, useRegisterMutation } from '../generated/graphql'
 import { withApollo } from '../lib/apolloClient'
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  )
-}
+import Copyright from '../components/Copyright'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -167,7 +155,7 @@ const Signup: React.FC = () => {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link href="/login" variant="body2">
                 Already have an account? Sign in
               </Link>
             </Grid>

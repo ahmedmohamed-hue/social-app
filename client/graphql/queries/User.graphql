@@ -1,23 +1,27 @@
 query User($username: String!) {
   user(username: $username) {
-    id
-    email
-    firstName
-    username
-    lastName
-    onlineStatus
-    lastSeen
-    avatar_url
+    ...RegularUser
     posts {
+      id
       body
       title
       createdAt
+      creatorId
       owner
-      id
+      likeStatus
       likes {
         ...RegularUser
       }
-      likeStatus
+      creator {
+        ...RegularUser
+      }
+      comments {
+        comment
+        createdAt
+        creator {
+          ...RegularUser
+        }
+      }
     }
   }
 }

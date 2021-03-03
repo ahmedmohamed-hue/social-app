@@ -6,15 +6,22 @@ query Post($id: Float!) {
     createdAt
     creatorId
     owner
+    likeStatus
     likes {
       ...RegularUser
     }
-    likeStatus
+
     creator {
-      username
-      firstName
-      lastName
-      avatar_url
+      ...RegularUser
+    }
+    comments {
+      id
+      comment
+      createdAt
+      owner
+      creator {
+        ...RegularUser
+      }
     }
   }
 }

@@ -20,6 +20,8 @@ import Link from './Link'
 import DeleteModal from './Modals/DeleteConfirmModal'
 import LikersModal from './Modals/LikeModal'
 import useModal from '../lib/hooks/useModal'
+import Comments from './Comments'
+import AddComment from './AddComment'
 
 dayjs.extend(relativeTime)
 
@@ -38,6 +40,11 @@ const useStyles = makeStyles((theme) => ({
       textDecoration: 'underline',
     },
   },
+  chatIcon: {
+    display: 'flex',
+    marginRight: 8,
+    color: theme.palette.text.secondary,
+  },
 }))
 
 interface PostProps {
@@ -54,7 +61,7 @@ const Post: React.FC<PostProps> = ({ post, isUser }) => {
   const [likesProps, likesHandleOpen] = useModal()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  const [like] = useLikeMutation({
+  const [like, { loading }] = useLikeMutation({
     update: (cache, { data }) => {
       cache.writeFragment({
         id: 'Post:' + post?.id!,
@@ -81,7 +88,7 @@ const Post: React.FC<PostProps> = ({ post, isUser }) => {
 
   const handleDelete = () => {
     deletePost({
-      update: async (cache) => {
+      update: (cache) => {
         cache.evict({ id: 'Post:' + post?.id! })
       },
     })
@@ -114,7 +121,13 @@ const Post: React.FC<PostProps> = ({ post, isUser }) => {
             <Avatar src={post.creator.avatar_url!} className={classes.avatar} />
           </Link>
           <Box>
-            <Typography variant="h6" color="textPrimary">
+            <Typography
+              variant="h6"
+              color="textPrimary"
+              component={Link}
+              href={`/${post.creator.username}`}
+              naked
+            >
               {post.creator.firstName} {post.creator.lastName}
             </Typography>
             <Link href={`/post/${post.id}`}>
@@ -140,15 +153,18 @@ const Post: React.FC<PostProps> = ({ post, isUser }) => {
         <Typography variant="body1">{post.body}</Typography>
       </Box>
       <Divider />
-      <Box display="flex" alignItems="center" pl={1} pb={1}>
-        <IconButton
-          disabled={!isUser}
-          onClick={async () => {
-            await like()
-          }}
-        >
-          {post.likeStatus ? <Heart color="red" /> : <HeartOutline color="red" />}
-        </IconButton>
+      <Box display="flex" alignItems="center" width="100%" paddingY={2} paddingX={1}>
+        <Box className={classes.chatIcon}>
+          <IconButton
+            disabled={!isUser || loading}
+            onClick={async () => {
+              await like()
+            }}
+            size="small"
+          >
+            {post.likeStatus ? <Heart color="red" /> : <HeartOutline color="red" />}
+          </IconButton>
+        </Box>
         <Typography
           onClick={post.likes?.length !== 0 ? likesHandleOpen : undefined}
           className={clsx({
@@ -160,14 +176,18 @@ const Post: React.FC<PostProps> = ({ post, isUser }) => {
           {post.likes?.length}
         </Typography>
         <Box display="flex" alignItems="center" ml={1}>
-          <IconButton>
+          <Box className={classes.chatIcon}>
             <ChatOutline />
-          </IconButton>
+          </Box>
           <Typography variant="subtitle2" color="textSecondary">
-            0
+            {post.comments?.length}
           </Typography>
         </Box>
       </Box>
+      <Divider />
+      <AddComment postId={post.id} />
+      <Divider />
+      {post.comments?.length !== 0 && <Comments postId={post.id} />}
       <DeleteModal
         {...props}
         action={handleDelete}
