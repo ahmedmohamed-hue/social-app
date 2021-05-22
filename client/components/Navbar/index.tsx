@@ -62,8 +62,8 @@ const Navbar: React.FC = () => {
         <Typography variant="h6" className={classes.title}>
           App
         </Typography>
-        {data?.currentUser ? (
-          <DropdownMenu user={data.currentUser} />
+        {data?.me ? (
+          <DropdownMenu user={data.me} />
         ) : (
           <>
             <Link href="/login">
@@ -75,7 +75,7 @@ const Navbar: React.FC = () => {
           </>
         )}
       </Toolbar>
-      <Sidebar user={data?.currentUser as User} />
+      <Sidebar user={data?.me as User} />
     </AppBar>
   )
 }

@@ -8,7 +8,6 @@ import { isServer } from '../lib/isServer'
 import { useUIStore } from '../lib/store'
 import { Router } from 'next/router'
 import 'nprogress/nprogress.css'
-import '../public/styles.css'
 import NProgress from 'nprogress'
 
 NProgress.configure({ showSpinner: false })
@@ -46,7 +45,10 @@ export default function MyApp(props: AppProps) {
     <React.Fragment>
       <Head>
         <title>My page</title>
-        <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
       </Head>
       <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

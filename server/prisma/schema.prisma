@@ -9,7 +9,7 @@ generator typegraphql {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") 
 }
 
 model Comment {
@@ -18,47 +18,55 @@ model Comment {
   userId    String   @db.Uuid
   postId    Int
   id        Int      @id @default(autoincrement())
-  post      post     @relation(fields: [postId], references: [id])
-  user      user     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-model like {
+model Like {
   userId String  @db.Uuid
   postId Int
   value  Boolean
-  post   post    @relation(fields: [postId], references: [id])
-  user   user    @relation(fields: [userId], references: [id])
+  post   Post    @relation(fields: [postId], references: [id])
+  user   User    @relation(fields: [userId], references: [id])
 
   @@id([userId, postId])
 }
 
-model post {
+model Post {
   id        Int       @id @default(autoincrement())
   title     String    @db.VarChar
   body      String    @db.VarChar
   creatorId String    @db.Uuid
   createdAt DateTime  @default(now()) @db.Timestamp(6)
   updateAt  DateTime  @default(now()) @db.Timestamp(6)
-  user      user      @relation(fields: [creatorId], references: [id])
+  user      User      @relation(fields: [creatorId], references: [id])
   Comment   Comment[]
-  like      like[]
+  like      Like[]
 }
 
-model user {
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
   id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   email          String    @unique
   username       String    @unique
   firstName      String
   lastName       String
+  displayName    String
   password       String
-  role           String    @default("USER")
+  role           Role      @default(USER)
   onlineStatus   Boolean   @default(true)
   isVisible      Boolean   @default(false)
   lastSeen       DateTime  @default(now()) @db.Timestamp(6)
+  createdAt      DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime  @updatedAt
   avatar_url     String?   @db.VarChar
   cover_url      String?   @db.VarChar
   isEmailVerfied Boolean   @default(false)
   Comment        Comment[]
-  like           like[]
-  post           post[]
+  like           Like[]
+  post           Post[]
 }

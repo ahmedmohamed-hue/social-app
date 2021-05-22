@@ -59,7 +59,7 @@ const Index: React.FC = () => {
   const [props, handleOpen] = useModal()
 
   const handleModalOpen = () => {
-    if (!data?.currentUser) {
+    if (!data?.me) {
       router.push('/login')
     } else {
       handleOpen()
@@ -86,11 +86,16 @@ const Index: React.FC = () => {
 
             <Box maxWidth="700px" mx="auto">
               <Box mb={2}>
-                <Button color="primary" variant="contained" fullWidth onClick={handleModalOpen}>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  fullWidth
+                  onClick={handleModalOpen}
+                >
                   Create Post
                 </Button>
               </Box>
-              <Posts isUser={!!data?.currentUser} />
+              <Posts isUser={!!data?.me} />
             </Box>
           </Grid>
           <Grid item md={4} lg={3}>

@@ -1,20 +1,22 @@
-import React from 'react'
-import Button from '@material-ui/core/Button'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import TextField from '@material-ui/core/TextField'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
-import Link from '@material-ui/core/Link'
-import Grid from '@material-ui/core/Grid'
 import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
+import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
+import CssBaseline from '@material-ui/core/CssBaseline'
+import Grid from '@material-ui/core/Grid'
+import Link from '@material-ui/core/Link'
+import { makeStyles } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { useFormik } from 'formik'
 import { useRouter } from 'next/router'
-import { CurrentUserQuery, CurrentUserDocument, useRegisterMutation } from '../generated/graphql'
-import { withApollo } from '../lib/apolloClient'
+import React from 'react'
 import Copyright from '../components/Copyright'
+import {
+  CurrentUserDocument,
+  CurrentUserQuery,
+  useRegisterMutation,
+} from '../generated/graphql'
+import { withApollo } from '../lib/apolloClient'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -76,7 +78,7 @@ const Signup: React.FC = () => {
       <CssBaseline />
       <div className={classes.paper}>
         <Typography component="h1" variant="h5">
-          Sign up
+          Create your account
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
           <Grid container spacing={2}>
@@ -135,12 +137,6 @@ const Signup: React.FC = () => {
                 id="password"
                 {...getFieldProps('password')}
                 autoComplete="current-password"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={<Checkbox value="allowExtraEmails" color="primary" />}
-                label="I want to receive inspiration, marketing promotions and updates via email."
               />
             </Grid>
           </Grid>

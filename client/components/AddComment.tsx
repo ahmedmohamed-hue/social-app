@@ -2,7 +2,11 @@ import { gql } from '@apollo/client'
 import { Box, Avatar, TextField } from '@material-ui/core'
 import { useFormik } from 'formik'
 import React from 'react'
-import { PaginatedComments, useAddCommentMutation, useCurrentUserQuery } from '../generated/graphql'
+import {
+  PaginatedComments,
+  useAddCommentMutation,
+  useCurrentUserQuery,
+} from '../generated/graphql'
 import Link from './Link'
 
 const AddComment: React.FC<{ postId: number }> = ({ postId }) => {
@@ -34,15 +38,22 @@ const AddComment: React.FC<{ postId: number }> = ({ postId }) => {
               }
             }
           `
-          const existingComments: PaginatedComments | null = cache.readFragment<PaginatedComments>({
-            id: `Post:${postId}`,
-            fragment,
-          })
+          const existingComments: PaginatedComments | null = cache.readFragment<PaginatedComments>(
+            {
+              id: `Post:${postId}`,
+              fragment,
+            }
+          )
 
           cache.writeFragment({
             fragment,
             id: `Post:${postId}`,
-            data: { comments: [...(existingComments?.comments || []), data?.addComment!] },
+            data: {
+              comments: [
+                ...(existingComments?.comments || []),
+                data?.addComment!,
+              ],
+            },
           })
           cache.evict({
             fieldName: `paginatedComments:{"postId":${postId}}`,
@@ -53,7 +64,7 @@ const AddComment: React.FC<{ postId: number }> = ({ postId }) => {
     },
   })
 
-  if (!data?.currentUser && !loading) {
+  if (!data?.me && !loading) {
     return null
   }
   return (
@@ -61,8 +72,8 @@ const AddComment: React.FC<{ postId: number }> = ({ postId }) => {
       <Box mr={2}>
         <Avatar
           component={Link}
-          href={`/${data?.currentUser?.username}`}
-          src={data?.currentUser?.avatar_url!}
+          href={`/${data?.me?.username}`}
+          src={data?.me?.avatar_url!}
         />
       </Box>
       <form style={{ width: '100%' }} onSubmit={handleSubmit}>

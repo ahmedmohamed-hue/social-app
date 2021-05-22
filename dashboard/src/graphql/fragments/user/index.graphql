@@ -1,0 +1,11 @@
+fragment User on User {
+  id
+  email
+  firstName
+  lastName
+  displayName
+  role
+  createdAt
+  updatedAt
+  isEmailVerfied
+}

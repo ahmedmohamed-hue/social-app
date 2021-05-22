@@ -19,31 +19,17 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
+  comments: Array<Comment>;
+  paginatedComments: PaginatedComments;
   postByUser: Array<Post>;
   post?: Maybe<Post>;
   paginatedPosts: PaginatedPosts;
+  test: TestResponse;
+  me?: Maybe<User>;
+  isValidResetPasswordToken: Scalars['Boolean'];
   user?: Maybe<User>;
   users: Array<User>;
-  comments: Array<Comment>;
-  paginatedComments: PaginatedComments;
-  currentUser?: Maybe<User>;
-  isValidRestoreToken: Scalars['Boolean'];
-};
-
-
-export type QueryPostArgs = {
-  id: Scalars['Float'];
-};
-
-
-export type QueryPaginatedPostsArgs = {
-  cursor?: Maybe<Scalars['String']>;
-  limit: Scalars['Float'];
-};
-
-
-export type QueryUserArgs = {
-  username: Scalars['String'];
+  paginatedUsers: PaginatedUsers;
 };
 
 
@@ -59,9 +45,69 @@ export type QueryPaginatedCommentsArgs = {
 };
 
 
-export type QueryIsValidRestoreTokenArgs = {
+export type QueryPostArgs = {
+  id: Scalars['Float'];
+};
+
+
+export type QueryPaginatedPostsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Float'];
+};
+
+
+export type QueryIsValidResetPasswordTokenArgs = {
   token: Scalars['String'];
 };
+
+
+export type QueryUserArgs = {
+  username: Scalars['String'];
+};
+
+
+export type QueryPaginatedUsersArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Float'];
+};
+
+export type Comment = {
+  __typename?: 'Comment';
+  createdAt: Scalars['DateTime'];
+  comment: Scalars['String'];
+  userId: Scalars['String'];
+  postId: Scalars['Int'];
+  id: Scalars['Int'];
+  creator: User;
+  owner: Scalars['Boolean'];
+};
+
+
+export type User = {
+  __typename?: 'User';
+  id: Scalars['String'];
+  email: Scalars['String'];
+  username: Scalars['String'];
+  firstName: Scalars['String'];
+  lastName: Scalars['String'];
+  displayName: Scalars['String'];
+  password: Scalars['String'];
+  role: Role;
+  onlineStatus: Scalars['Boolean'];
+  isVisible: Scalars['Boolean'];
+  lastSeen: Scalars['DateTime'];
+  createdAt: Scalars['DateTime'];
+  updatedAt: Scalars['DateTime'];
+  avatar_url?: Maybe<Scalars['String']>;
+  cover_url?: Maybe<Scalars['String']>;
+  isEmailVerfied: Scalars['Boolean'];
+  posts: Array<Post>;
+};
+
+export enum Role {
+  User = 'USER',
+  Admin = 'ADMIN'
+}
 
 export type Post = {
   __typename?: 'Post';
@@ -78,34 +124,10 @@ export type Post = {
   owner: Scalars['Boolean'];
 };
 
-
-export type User = {
-  __typename?: 'User';
-  id: Scalars['String'];
-  email: Scalars['String'];
-  username: Scalars['String'];
-  firstName: Scalars['String'];
-  lastName: Scalars['String'];
-  password: Scalars['String'];
-  role: Scalars['String'];
-  onlineStatus: Scalars['Boolean'];
-  isVisible: Scalars['Boolean'];
-  lastSeen: Scalars['DateTime'];
-  avatar_url?: Maybe<Scalars['String']>;
-  cover_url?: Maybe<Scalars['String']>;
-  isEmailVerfied: Scalars['Boolean'];
-  posts: Array<Post>;
-};
-
-export type Comment = {
-  __typename?: 'Comment';
-  createdAt: Scalars['DateTime'];
-  comment: Scalars['String'];
-  userId: Scalars['String'];
-  postId: Scalars['Int'];
-  id: Scalars['Int'];
-  creator: User;
-  owner: Scalars['Boolean'];
+export type PaginatedComments = {
+  __typename?: 'PaginatedComments';
+  comments: Array<Comment>;
+  hasMore: Scalars['Boolean'];
 };
 
 export type PaginatedPosts = {
@@ -114,30 +136,50 @@ export type PaginatedPosts = {
   hasMore: Scalars['Boolean'];
 };
 
-export type PaginatedComments = {
-  __typename?: 'PaginatedComments';
-  comments: Array<Comment>;
+export type TestResponse = {
+  __typename?: 'TestResponse';
+  message: Scalars['String'];
+  version: Scalars['String'];
+};
+
+export type PaginatedUsers = {
+  __typename?: 'PaginatedUsers';
+  users: Array<User>;
   hasMore: Scalars['Boolean'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addComment: Comment;
+  removeComment: Scalars['Boolean'];
   createPost: Post;
   deletePost: Scalars['Boolean'];
   like?: Maybe<LikeResponse>;
+  login: User;
+  logout: Scalars['Boolean'];
+  register: User;
+  confirmEmail: User;
+  forgotPassword: Scalars['Boolean'];
+  resetPassword: User;
+  createUser: User;
+  editUser: User;
+  deleteUser: User;
   toggleStatus?: Maybe<ToggleOnline>;
   addAvatar: Scalars['String'];
   addCover: Scalars['String'];
   removeCover: Scalars['Boolean'];
   removeAvatar: Scalars['Boolean'];
-  addComment: Comment;
-  removeComment: Scalars['Boolean'];
-  register: User;
-  login?: Maybe<User>;
-  logout: Scalars['Boolean'];
-  confirmEmail: User;
-  forgotPassword: Scalars['Boolean'];
-  changePassword: User;
+};
+
+
+export type MutationAddCommentArgs = {
+  postId: Scalars['Int'];
+  commnet: Scalars['String'];
+};
+
+
+export type MutationRemoveCommentArgs = {
+  commentId: Scalars['Int'];
 };
 
 
@@ -156,35 +198,13 @@ export type MutationLikeArgs = {
 };
 
 
-export type MutationAddAvatarArgs = {
-  file: Scalars['Upload'];
-};
-
-
-export type MutationAddCoverArgs = {
-  file: Scalars['Upload'];
-};
-
-
-export type MutationAddCommentArgs = {
-  postId: Scalars['Int'];
-  commnet: Scalars['String'];
-};
-
-
-export type MutationRemoveCommentArgs = {
-  commentId: Scalars['Int'];
+export type MutationLoginArgs = {
+  options: LoginInput;
 };
 
 
 export type MutationRegisterArgs = {
   options: RegisterInput;
-};
-
-
-export type MutationLoginArgs = {
-  password: Scalars['String'];
-  usernameOrEmail: Scalars['String'];
 };
 
 
@@ -198,9 +218,35 @@ export type MutationForgotPasswordArgs = {
 };
 
 
-export type MutationChangePasswordArgs = {
+export type MutationResetPasswordArgs = {
   newPassword: Scalars['String'];
   token: Scalars['String'];
+};
+
+
+export type MutationCreateUserArgs = {
+  options: CreateUserInput;
+};
+
+
+export type MutationEditUserArgs = {
+  data: EditUserInput;
+  id: Scalars['String'];
+};
+
+
+export type MutationDeleteUserArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationAddAvatarArgs = {
+  file: Scalars['Upload'];
+};
+
+
+export type MutationAddCoverArgs = {
+  file: Scalars['Upload'];
 };
 
 export type PostInput = {
@@ -214,20 +260,45 @@ export type LikeResponse = {
   likeStatus: Scalars['Boolean'];
 };
 
+export type LoginInput = {
+  usernameOrEmail: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type RegisterInput = {
+  firstName: Scalars['String'];
+  lastName: Scalars['String'];
+  email: Scalars['String'];
+  username: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type CreateUserInput = {
+  firstName: Scalars['String'];
+  lastName: Scalars['String'];
+  email: Scalars['String'];
+  username: Scalars['String'];
+  password: Scalars['String'];
+  displayName?: Maybe<Scalars['String']>;
+  role?: Maybe<Scalars['String']>;
+  sendEmail?: Maybe<Scalars['Boolean']>;
+};
+
+export type EditUserInput = {
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  username: Scalars['String'];
+  displayName?: Maybe<Scalars['String']>;
+  role?: Maybe<Scalars['String']>;
+};
+
 export type ToggleOnline = {
   __typename?: 'ToggleOnline';
   onlineStatus: Scalars['Boolean'];
   lastSeen: Scalars['DateTime'];
 };
 
-
-export type RegisterInput = {
-  email: Scalars['String'];
-  username: Scalars['String'];
-  firstName: Scalars['String'];
-  lastName: Scalars['String'];
-  password: Scalars['String'];
-};
 
 export type CurrentUserFragment = (
   { __typename?: 'User' }
@@ -333,10 +404,10 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = (
   { __typename?: 'Mutation' }
-  & { login?: Maybe<(
+  & { login: (
     { __typename?: 'User' }
     & Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'username' | 'onlineStatus' | 'lastSeen' | 'avatar_url'>
-  )> }
+  ) }
 );
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
@@ -429,7 +500,7 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = (
   { __typename?: 'Query' }
-  & { currentUser?: Maybe<(
+  & { me?: Maybe<(
     { __typename?: 'User' }
     & CurrentUserFragment
   )> }
@@ -442,7 +513,7 @@ export type IsValidRestoreTokenQueryVariables = Exact<{
 
 export type IsValidRestoreTokenQuery = (
   { __typename?: 'Query' }
-  & Pick<Query, 'isValidRestoreToken'>
+  & Pick<Query, 'isValidResetPasswordToken'>
 );
 
 export type PostQueryVariables = Exact<{
@@ -784,7 +855,7 @@ export type LikeMutationResult = Apollo.MutationResult<LikeMutation>;
 export type LikeMutationOptions = Apollo.BaseMutationOptions<LikeMutation, LikeMutationVariables>;
 export const LoginDocument = gql`
     mutation Login($usernameOrEmail: String!, $password: String!) {
-  login(usernameOrEmail: $usernameOrEmail, password: $password) {
+  login(options: {usernameOrEmail: $usernameOrEmail, password: $password}) {
     id
     firstName
     lastName
@@ -1062,7 +1133,7 @@ export type CommentsLazyQueryHookResult = ReturnType<typeof useCommentsLazyQuery
 export type CommentsQueryResult = Apollo.QueryResult<CommentsQuery, CommentsQueryVariables>;
 export const CurrentUserDocument = gql`
     query currentUser {
-  currentUser {
+  me {
     ...CurrentUser
   }
 }
@@ -1094,7 +1165,7 @@ export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLaz
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
 export const IsValidRestoreTokenDocument = gql`
     query isValidRestoreToken($token: String!) {
-  isValidRestoreToken(token: $token)
+  isValidResetPasswordToken(token: $token)
 }
     `;
 

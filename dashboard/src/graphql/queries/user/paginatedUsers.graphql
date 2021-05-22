@@ -1,0 +1,8 @@
+query PaginatedUsers($limit: Float!, $cursor: String!) {
+  paginatedUsers(limit: $limit, cursor: $cursor) {
+    users {
+      ...Me
+    }
+    hasMore
+  }
+}

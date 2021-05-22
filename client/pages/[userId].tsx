@@ -32,7 +32,9 @@ const useStyles = makeStyles((theme) => ({
   cover: {
     backgroundRepeat: 'no-repeat',
     backgroundColor:
-      theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.background.paper,
+      theme.palette.type === 'light'
+        ? theme.palette.grey[200]
+        : theme.palette.background.paper,
     backgroundSize: 'contain',
     backgroundPosition: 'center',
     height: '21vw',
@@ -56,7 +58,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     zIndex: 1,
     width: '100%',
-    backgroundColor: `rgba(0,0,0,${theme.palette.type === 'dark' ? '0.6' : '0.3'})`,
+    backgroundColor: `rgba(0,0,0,${
+      theme.palette.type === 'dark' ? '0.6' : '0.3'
+    })`,
   },
 }))
 
@@ -100,7 +104,7 @@ const User: React.FC = () => {
           className={classes.cover}
         >
           <ProfileCover user={user} />
-          <ProfilePicture currentUser={currentUser?.currentUser!} user={user} />
+          <ProfilePicture currentUser={currentUser?.me!} user={user} />
         </Box>
         <Box textAlign="center" mt={7}>
           <Typography variant="h5" color="textPrimary">
@@ -119,7 +123,7 @@ const User: React.FC = () => {
                 <Post
                   key={p.id!}
                   post={{ ...(p as PostType), creator: user as UserType }}
-                  isUser={!!currentUser?.currentUser}
+                  isUser={!!currentUser?.me}
                 />
               ))
             ) : (

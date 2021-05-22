@@ -1,0 +1,25 @@
+mutation CreateUser(
+  $email: String!
+  $password: String!
+  $firstName: String!
+  $lastName: String!
+  $displayName: String
+  $username: String!
+  $role: String
+  $sendEmail: Boolean
+) {
+  createUser(
+    options: {
+      email: $email
+      password: $password
+      firstName: $firstName
+      lastName: $lastName
+      displayName: $displayName
+      role: $role
+      sendEmail: $sendEmail
+      username: $username
+    }
+  ) {
+    ...User
+  }
+}

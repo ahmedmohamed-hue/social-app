@@ -2,7 +2,11 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { useFormik } from 'formik'
 import { useRouter } from 'next/router'
-import { useLoginMutation, CurrentUserQuery, CurrentUserDocument } from '../generated/graphql'
+import {
+  useLoginMutation,
+  CurrentUserQuery,
+  CurrentUserDocument,
+} from '../generated/graphql'
 import { withApollo } from '../lib/apolloClient'
 import {
   Typography,
@@ -50,7 +54,10 @@ const login: React.FC = () => {
     },
     onSubmit: (values) => {
       login({
-        variables: values,
+        variables: {
+          usernameOrEmail: values.usernameOrEmail,
+          password: values.password,
+        },
         update: async (cache, { data }) => {
           cache.evict({ fieldName: 'paginatedPosts:{}' })
           cache.writeQuery<CurrentUserQuery>({
